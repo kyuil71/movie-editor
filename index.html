@@ -1,0 +1,616 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pro Video Editor - Auto-Resolution Crop & Sequence Export</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800;900&display=swap');
+        
+        body { 
+            background-color: #000000; 
+            color: #ffffff; 
+            font-family: 'Inter', sans-serif;
+            user-select: none; 
+            overflow-x: hidden; 
+        }
+
+        /* 로딩 오버레이 */
+        .loading-overlay {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.98); z-index: 2000; flex-direction: column; align-items: center; justify-content: center;
+        }
+
+        /* 패널 디자인 */
+        .panel { background-color: #0a0a0c; border: 1px solid #333338; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        .input-dark { background-color: #000000; border: 1px solid #55555e; border-radius: 6px; color: #ffffff; outline: none; transition: all 0.2s; font-weight: 700; font-size: 13px; }
+        .input-dark:read-only { opacity: 0.6; cursor: default; }
+
+        /* 크롭 도구 강화 */
+        #videoWrapper { position: relative; display: inline-block; line-height: 0; background: #000; border-radius: 8px; overflow: hidden; border: 1px solid #222; }
+        #cropBox {
+            position: absolute; border: 2px solid #ffffff; box-sizing: border-box;
+            display: none; cursor: move; z-index: 10;
+            box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.85);
+        }
+        /* 크롭 핸들 크기 키움 */
+        .handle { position: absolute; width: 16px; height: 16px; background: #ffffff; border: 2px solid #000; border-radius: 4px; z-index: 20; }
+        .handle-n { top: -8px; left: calc(50% - 8px); cursor: n-resize; }
+        .handle-s { bottom: -8px; left: calc(50% - 8px); cursor: s-resize; }
+        .handle-e { right: -8px; top: calc(50% - 8px); cursor: e-resize; }
+        .handle-w { left: -8px; top: calc(50% - 8px); cursor: w-resize; }
+        .handle-nw { top: -8px; left: -8px; cursor: nw-resize; }
+        .handle-ne { top: -8px; right: -8px; cursor: ne-resize; }
+        .handle-sw { bottom: -8px; left: -8px; cursor: sw-resize; }
+        .handle-se { bottom: -8px; right: -8px; cursor: se-resize; }
+
+        /* 타임라인 */
+        #timelineContainer { padding: 35px 16px 16px; position: relative; background: #0a0a0c; border-top: 3px solid #1a1a1c; }
+        #timelineTrack {
+            position: relative; height: 56px; background: #000000;
+            border-radius: 8px; display: flex; align-items: center; gap: 3px; padding: 4px;
+            cursor: pointer; overflow: hidden; border: 2px solid #44444a;
+        }
+        .timeline-clip {
+            height: 100%; background: #1c1c21; border: 1px solid #3a3a42;
+            position: relative; cursor: grab; display: flex; align-items: center; justify-content: center;
+            font-size: 11px; font-weight: 800; color: #666; overflow: hidden;
+            transition: all 0.2s; border-radius: 6px;
+        }
+        .timeline-clip.active { background: #27272a !important; color: #ffffff !important; border-color: #52525b !important; z-index: 20; }
+        
+        .delete-clip-btn {
+            position: absolute; top: 4px; right: 4px; width: 18px; height: 18px;
+            background: #ef4444; color: #fff; border-radius: 4px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 12px; font-weight: bold; cursor: pointer; opacity: 0; transition: opacity 0.2s;
+        }
+        .timeline-clip:hover .delete-clip-btn { opacity: 1; }
+
+        /* 화이트 펜타곤 재생 헤드 */
+        #playhead {
+            position: absolute; top: -25px; width: 2px; height: 105px;
+            background: #ffffff; z-index: 150; pointer-events: none;
+            will-change: left; box-shadow: 0 0 8px rgba(255, 255, 255, 0.3);
+        }
+        #playheadHandle {
+            position: absolute; top: -10px; left: -11px; width: 24px; height: 30px;
+            background: #ffffff; cursor: ew-resize; pointer-events: auto;
+            clip-path: polygon(0% 0%, 100% 0%, 100% 70%, 50% 100%, 0% 70%);
+            z-index: 151; box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+        }
+
+        .custom-scrollbar::-webkit-scrollbar { width: 8px; height: 8px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #444; border-radius: 10px; }
+        
+        /* Undo 버튼 */
+        #undoBtn {
+            background-color: #ffffff;
+            border: 2px solid #ffffff;
+            color: #000000;
+            padding: 8px 20px;
+            border-radius: 10px;
+            font-weight: 800;
+            font-size: 12px;
+            text-transform: uppercase;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        #undoBtn:not(:disabled):hover { background-color: #000000; color: #ffffff; transform: translateY(-2px); }
+        #undoBtn:disabled { background-color: #1a1a1c; color: #444; border-color: #333; opacity: 0.4; cursor: not-allowed; }
+    </style>
+</head>
+<body class="min-h-screen p-4 md:p-8">
+    <div class="max-w-7xl mx-auto space-y-6">
+        <!-- 상단 내비게이션 -->
+        <nav class="flex items-center justify-between p-4 border-b-2 border-zinc-900 bg-[#0c0c0e] rounded-xl shadow-lg">
+            <div class="flex items-center space-x-8">
+                <span class="text-3xl font-black tracking-tighter italic">EDIT.PRO</span>
+                <div class="h-6 w-[2px] bg-zinc-800"></div>
+                <button id="undoBtn" disabled title="되돌리기 (Ctrl+Z)">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="4" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6"/></svg>
+                    <span>Undo</span>
+                </button>
+            </div>
+            <div id="fileStatus" class="text-[10px] font-black uppercase tracking-[0.3em] text-zinc-500 bg-zinc-900 px-3 py-1.5 rounded border border-zinc-800">Media Master</div>
+        </nav>
+
+        <!-- 업로드 영역 -->
+        <div id="dropZone" class="h-[480px] border-4 border-dashed border-zinc-800 rounded-[28px] flex flex-col items-center justify-center cursor-pointer hover:bg-zinc-900/40 hover:border-zinc-400 transition-all group">
+            <input type="file" id="videoInput" class="hidden" accept="video/*">
+            <div class="p-8 rounded-full bg-zinc-900 mb-8 group-hover:scale-110 transition-transform shadow-2xl">
+                <svg class="w-12 h-12 text-zinc-500 group-hover:text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"/></svg>
+            </div>
+            <p class="text-sm font-black uppercase tracking-[0.4em] text-zinc-500 group-hover:text-white transition">Import Media to Start</p>
+        </div>
+
+        <!-- 메인 작업 UI -->
+        <div id="editorUI" class="hidden grid grid-cols-12 gap-8">
+            <div class="col-span-12 lg:col-span-8 space-y-6">
+                <div class="panel p-2 flex flex-col items-center overflow-hidden">
+                    <div id="videoWrapper">
+                        <video id="mainVideo" class="max-h-[500px] w-full" playsinline preload="auto"></video>
+                        <div id="cropBox">
+                            <div class="handle handle-nw" data-handle="nw"></div>
+                            <div class="handle handle-n" data-handle="n"></div>
+                            <div class="handle handle-ne" data-handle="ne"></div>
+                            <div class="handle handle-e" data-handle="e"></div>
+                            <div class="handle handle-se" data-handle="se"></div>
+                            <div class="handle handle-s" data-handle="s"></div>
+                            <div class="handle handle-sw" data-handle="sw"></div>
+                            <div class="handle handle-w" data-handle="w"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="w-full py-4 flex items-center justify-between px-6 border-t-2 border-zinc-900 mt-2 bg-[#050507] rounded-b-xl">
+                        <div class="flex items-center space-x-8">
+                            <button id="playBtn" class="hover:scale-110 transition text-white">
+                                <svg id="playIcon" class="w-10 h-10 fill-current" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                            </button>
+                            <div class="font-black text-lg tracking-widest font-mono text-zinc-400">
+                                <span id="curTime" class="text-white">00:00.0</span> <span class="opacity-20 mx-2">/</span> <span id="durTime" class="opacity-40">00:00.0</span>
+                            </div>
+                        </div>
+                        <div class="flex items-center space-x-4">
+                            <button id="splitBtn" class="text-[11px] font-black uppercase tracking-widest border-2 border-zinc-700 px-6 py-2.5 rounded-xl hover:bg-white hover:text-black transition-all shadow-md">Split</button>
+                            <button id="toggleCrop" class="text-[11px] font-black uppercase tracking-widest border-2 border-zinc-700 px-6 py-2.5 rounded-xl hover:bg-zinc-700 transition-all shadow-md">Crop Mode</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="panel shadow-2xl" id="timelineContainer">
+                    <div id="timelineTrack" class="custom-scrollbar">
+                        <div id="playhead"><div id="playheadHandle"></div></div>
+                    </div>
+                    <div class="flex justify-between mt-4 text-[10px] font-black uppercase tracking-[0.2em] px-1">
+                        <span class="text-zinc-500">Sequence Track</span>
+                        <span id="totalDurLabel" class="text-white bg-zinc-800 px-2 py-0.5 rounded">0.0s</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 인스펙터 및 설정 -->
+            <div class="col-span-12 lg:col-span-4 space-y-6">
+                <div class="panel p-6 flex flex-col h-[420px]">
+                    <div class="flex justify-between items-center mb-6 border-b-2 border-zinc-900 pb-4">
+                        <h2 class="text-[11px] font-black uppercase tracking-[0.2em] text-zinc-300">Inspector</h2>
+                        <button id="clearTimeline" class="text-[10px] font-black uppercase text-rose-600 hover:text-rose-400">Reset</button>
+                    </div>
+                    <div id="clipList" class="flex-1 overflow-y-auto space-y-3 pr-2 custom-scrollbar">
+                        <p class="text-[11px] text-zinc-800 italic font-black text-center mt-10">No segments</p>
+                    </div>
+                </div>
+
+                <div class="panel p-6 space-y-6 border-2 border-white/5 shadow-2xl">
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="space-y-2">
+                            <label class="text-[10px] font-black uppercase tracking-widest text-zinc-500">Crop Width (px)</label>
+                            <input type="number" id="outW" class="w-full input-dark p-3" readonly>
+                        </div>
+                        <div class="space-y-2">
+                            <label class="text-[10px] font-black uppercase tracking-widest text-zinc-500">Crop Height (px)</label>
+                            <input type="number" id="outH" class="w-full input-dark p-3" readonly>
+                        </div>
+                    </div>
+                    <div class="space-y-2">
+                        <label class="text-[10px] font-black uppercase tracking-widest text-zinc-500">Bitrate</label>
+                        <select id="quality" class="w-full input-dark p-3 cursor-pointer appearance-none">
+                            <option value="4000000">Economic (4Mbps)</option>
+                            <option value="15000000" selected>Standard (15Mbps)</option>
+                            <option value="45000000">Master (45Mbps)</option>
+                        </select>
+                    </div>
+                    <button id="export" class="w-full bg-white text-black font-black uppercase text-[11px] tracking-[0.3em] py-4 rounded-xl hover:bg-zinc-200 transition-all active:scale-95 shadow-xl">
+                        Render Full Sequence (.MP4)
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 렌더링 오버레이 -->
+    <div id="overlay" class="loading-overlay">
+        <p class="text-sm font-black uppercase tracking-[0.5em] mb-12 text-white">Rendering Sequence with Crop</p>
+        <div class="w-80 bg-zinc-900 h-[3px] relative overflow-hidden rounded-full">
+            <div id="bar" class="absolute top-0 left-0 bg-white h-full w-0 transition-all duration-300"></div>
+        </div>
+        <p id="percent" class="mt-6 text-xs font-black font-mono text-zinc-400">0%</p>
+    </div>
+
+    <canvas id="canvas" class="hidden"></canvas>
+
+    <script>
+        const videoInput = document.getElementById('videoInput');
+        const dropZone = document.getElementById('dropZone');
+        const mainVideo = document.getElementById('mainVideo');
+        const playBtn = document.getElementById('playBtn');
+        const timelineTrack = document.getElementById('timelineTrack');
+        const playhead = document.getElementById('playhead');
+        const playheadHandle = document.getElementById('playheadHandle');
+        const curTimeLabel = document.getElementById('curTime');
+        const durTimeLabel = document.getElementById('durTime');
+        const cropBox = document.getElementById('cropBox');
+        const clipList = document.getElementById('clipList');
+        const splitBtn = document.getElementById('splitBtn');
+        const undoBtn = document.getElementById('undoBtn');
+        const outW = document.getElementById('outW');
+        const outH = document.getElementById('outH');
+        const exportBtn = document.getElementById('export');
+        const canvas = document.getElementById('canvas');
+        const overlay = document.getElementById('overlay');
+        const bar = document.getElementById('bar');
+        const percent = document.getElementById('percent');
+
+        let clips = []; 
+        let crop = { x: 0, y: 0, w: 0, h: 0 }; // Display pixels
+        let isScrubbing = false;
+        let isCropping = false;
+        let undoStack = [];
+        let seqCurrentTime = 0; 
+        let lastTimestamp = 0;
+
+        function getSequenceDuration() {
+            return clips.reduce((acc, c) => acc + (c.end - c.start), 0);
+        }
+
+        function mapSeqTimeToSourceTime(globalTime) {
+            let accumulated = 0;
+            for (let clip of clips) {
+                const dur = clip.end - clip.start;
+                if (globalTime <= accumulated + dur) {
+                    return clip.start + (globalTime - accumulated);
+                }
+                accumulated += dur;
+            }
+            return clips.length > 0 ? clips[clips.length - 1].end : 0;
+        }
+
+        function syncUI(timestamp) {
+            const seqDur = getSequenceDuration();
+            if (!mainVideo.paused && !isScrubbing) {
+                if (!lastTimestamp) lastTimestamp = timestamp;
+                const delta = (timestamp - lastTimestamp) / 1000;
+                lastTimestamp = timestamp;
+                seqCurrentTime += delta;
+                if (seqCurrentTime >= seqDur) {
+                    seqCurrentTime = seqDur;
+                    mainVideo.pause();
+                }
+                let accumulated = 0;
+                let targetSourceTime = 0;
+                let activeIdx = -1;
+                for (let i = 0; i < clips.length; i++) {
+                    const dur = clips[i].end - clips[i].start;
+                    if (seqCurrentTime <= accumulated + dur) {
+                        targetSourceTime = clips[i].start + (seqCurrentTime - accumulated);
+                        activeIdx = i;
+                        break;
+                    }
+                    accumulated += dur;
+                }
+                if (activeIdx !== -1) {
+                    if (Math.abs(mainVideo.currentTime - targetSourceTime) > 0.15) {
+                        mainVideo.currentTime = targetSourceTime;
+                    }
+                    document.querySelectorAll('.timeline-clip').forEach((el, idx) => {
+                        if (idx === activeIdx) el.classList.add('active');
+                        else el.classList.remove('active');
+                    });
+                }
+            } else { lastTimestamp = 0; }
+            const ratio = Math.max(0, Math.min(1, seqCurrentTime / (seqDur || 1)));
+            playhead.style.left = (ratio * 100) + '%';
+            curTimeLabel.textContent = formatTime(seqCurrentTime);
+            durTimeLabel.textContent = formatTime(seqDur);
+            requestAnimationFrame(syncUI);
+        }
+        requestAnimationFrame(syncUI);
+
+        dropZone.onclick = () => videoInput.click();
+        videoInput.onchange = (e) => handleFile(e.target.files[0]);
+        
+        function handleFile(file) {
+            if (!file || !file.type.startsWith('video/')) return;
+            const url = URL.createObjectURL(file);
+            mainVideo.src = url;
+            mainVideo.onloadedmetadata = () => {
+                dropZone.classList.add('hidden');
+                document.getElementById('editorUI').classList.remove('hidden');
+                clips = [{ id: Date.now(), start: 0, end: mainVideo.duration }];
+                // 초기 크롭은 원본 전체
+                setTimeout(() => {
+                    initCrop();
+                    renderTimeline();
+                    saveState();
+                }, 100);
+            };
+        }
+
+        function saveState() {
+            const state = JSON.stringify({ clips, crop });
+            if (undoStack.length === 0 || undoStack[undoStack.length - 1] !== state) {
+                undoStack.push(state);
+                if (undoStack.length > 50) undoStack.shift();
+                undoBtn.disabled = undoStack.length <= 1;
+            }
+        }
+
+        undoBtn.onclick = () => {
+            if (undoStack.length <= 1) return;
+            undoStack.pop();
+            const prevState = JSON.parse(undoStack[undoStack.length - 1]);
+            clips = prevState.clips;
+            crop = prevState.crop;
+            renderTimeline();
+            updateCropUI();
+            undoBtn.disabled = undoStack.length <= 1;
+            seqCurrentTime = Math.min(seqCurrentTime, getSequenceDuration());
+            mainVideo.currentTime = mapSeqTimeToSourceTime(seqCurrentTime);
+        };
+
+        window.addEventListener('keydown', (e) => {
+            if ((e.ctrlKey || e.metaKey) && e.key === 'z') {
+                if (!undoBtn.disabled) undoBtn.click();
+            }
+        });
+
+        function setSequencePos(e) {
+            const rect = timelineTrack.getBoundingClientRect();
+            const ratio = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
+            const seqDur = getSequenceDuration();
+            seqCurrentTime = ratio * seqDur;
+            mainVideo.currentTime = mapSeqTimeToSourceTime(seqCurrentTime);
+        }
+
+        playheadHandle.onmousedown = (e) => { isScrubbing = true; e.stopPropagation(); };
+        timelineTrack.onmousedown = (e) => { if(!e.target.closest('.delete-clip-btn')) { isScrubbing = true; setSequencePos(e); }};
+        window.addEventListener('mousemove', (e) => { if (isScrubbing) setSequencePos(e); });
+        window.addEventListener('mouseup', () => { isScrubbing = false; });
+
+        playBtn.onclick = () => {
+            if (seqCurrentTime >= getSequenceDuration()) seqCurrentTime = 0;
+            mainVideo.paused ? mainVideo.play() : mainVideo.pause();
+        };
+        mainVideo.onplay = () => document.getElementById('playIcon').innerHTML = '<path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>';
+        mainVideo.onpause = () => document.getElementById('playIcon').innerHTML = '<path d="M8 5v14l11-7z"/>';
+
+        function formatTime(s) {
+            const m = Math.floor(s / 60);
+            const ss = (s % 60).toFixed(1);
+            return `${m.toString().padStart(2,'0')}:${ss.toString().padStart(2,'0')}`;
+        }
+
+        splitBtn.onclick = () => {
+            let accumulated = 0;
+            let targetIdx = -1;
+            let localTime = 0;
+            for (let i = 0; i < clips.length; i++) {
+                const dur = clips[i].end - clips[i].start;
+                if (seqCurrentTime >= accumulated && seqCurrentTime <= accumulated + dur) {
+                    targetIdx = i;
+                    localTime = clips[i].start + (seqCurrentTime - accumulated);
+                    break;
+                }
+                accumulated += dur;
+            }
+            if (targetIdx !== -1) {
+                const target = clips[targetIdx];
+                const c1 = { ...target, id: Date.now(), end: localTime };
+                const c2 = { ...target, id: Date.now() + 1, start: localTime };
+                clips.splice(targetIdx, 1, c1, c2);
+                renderTimeline();
+                saveState();
+            }
+        };
+
+        // --- 크롭 시스템 (해상도 동기화 포함) ---
+        function initCrop() {
+            const vw = mainVideo.clientWidth;
+            const vh = mainVideo.clientHeight;
+            crop = { x: 0, y: 0, w: vw, h: vh };
+            updateCropUI();
+        }
+
+        document.getElementById('toggleCrop').onclick = () => {
+            isCropping = !isCropping;
+            cropBox.style.display = isCropping ? 'block' : 'none';
+        };
+
+        function updateCropUI() {
+            cropBox.style.left = crop.x + 'px';
+            cropBox.style.top = crop.y + 'px';
+            cropBox.style.width = crop.w + 'px';
+            cropBox.style.height = crop.h + 'px';
+
+            // 비디오 원본 대비 실제 픽셀 해상도 계산 및 출력
+            const scaleX = mainVideo.videoWidth / mainVideo.clientWidth;
+            const scaleY = mainVideo.videoHeight / mainVideo.clientHeight;
+            outW.value = Math.round(crop.w * scaleX);
+            outH.value = Math.round(crop.h * scaleY);
+        }
+
+        let dragInfo = null;
+        cropBox.onmousedown = (e) => {
+            if (e.target.classList.contains('handle')) {
+                dragInfo = { type: 'resize', handle: e.target.dataset.handle, x: e.clientX, y: e.clientY, ...crop };
+            } else {
+                dragInfo = { type: 'move', x: e.clientX, y: e.clientY, ...crop };
+            }
+            e.stopPropagation();
+        };
+
+        window.addEventListener('mousemove', (e) => {
+            if (!dragInfo) return;
+            const dx = e.clientX - dragInfo.x;
+            const dy = e.clientY - dragInfo.y;
+            const vw = mainVideo.clientWidth;
+            const vh = mainVideo.clientHeight;
+
+            if (dragInfo.type === 'move') {
+                crop.x = Math.max(0, Math.min(vw - dragInfo.w, dragInfo.x + dx));
+                crop.y = Math.max(0, Math.min(vh - dragInfo.h, dragInfo.y + dy));
+            } else {
+                const h = dragInfo.handle;
+                if (h.includes('e')) crop.w = Math.max(40, Math.min(vw - dragInfo.x, dragInfo.w + dx));
+                if (h.includes('s')) crop.h = Math.max(40, Math.min(vh - dragInfo.y, dragInfo.h + dy));
+                if (h.includes('w')) {
+                    const newW = Math.max(40, dragInfo.w - dx);
+                    if (dragInfo.x + dx >= 0 && newW >= 40) { crop.x = dragInfo.x + dx; crop.w = newW; }
+                }
+                if (h.includes('n')) {
+                    const newH = Math.max(40, dragInfo.h - dy);
+                    if (dragInfo.y + dy >= 0 && newH >= 40) { crop.y = dragInfo.y + dy; crop.h = newH; }
+                }
+            }
+            updateCropUI();
+        });
+
+        window.addEventListener('mouseup', () => { if(dragInfo) { dragInfo = null; saveState(); }});
+
+        function renderTimeline() {
+            const old = timelineTrack.querySelectorAll('.timeline-clip');
+            old.forEach(o => o.remove());
+            const totalDur = getSequenceDuration();
+            clips.forEach((clip, idx) => {
+                const dur = clip.end - clip.start;
+                const block = document.createElement('div');
+                block.className = 'timeline-clip';
+                block.draggable = true;
+                block.style.width = ((dur / (totalDur || 1)) * 100) + '%';
+                block.innerHTML = `<span>C${idx+1}</span>`;
+                const del = document.createElement('div');
+                del.className = 'delete-clip-btn';
+                del.innerHTML = '✕';
+                del.onclick = (e) => { e.stopPropagation(); delClip(clip.id); };
+                block.appendChild(del);
+                block.onclick = (e) => {
+                    e.stopPropagation();
+                    let acc = 0;
+                    for(let i=0; i<idx; i++) acc += (clips[i].end - clips[i].start);
+                    seqCurrentTime = acc;
+                    mainVideo.currentTime = clip.start;
+                };
+                block.ondragstart = (e) => { e.dataTransfer.setData('text', clip.id); block.classList.add('dragging'); };
+                block.ondragend = () => block.classList.remove('dragging');
+                block.ondragover = (e) => e.preventDefault();
+                block.ondrop = (e) => {
+                    e.preventDefault();
+                    const fromId = parseInt(e.dataTransfer.getData('text'));
+                    const fromIdx = clips.findIndex(c => c.id === fromId);
+                    const [moved] = clips.splice(fromIdx, 1);
+                    clips.splice(idx, 0, moved);
+                    renderTimeline();
+                    saveState();
+                };
+                timelineTrack.appendChild(block);
+            });
+            document.getElementById('totalDurLabel').textContent = `${totalDur.toFixed(1)}s`;
+            clipList.innerHTML = clips.length ? '' : '<p class="text-[11px] text-zinc-800 italic font-black text-center mt-10">No segments added</p>';
+            clips.forEach((clip, idx) => {
+                const card = document.createElement('div');
+                card.className = "bg-zinc-900 p-4 rounded-xl border-3 border-zinc-800 flex flex-col space-y-3 shadow-lg";
+                card.innerHTML = `
+                    <div class="flex justify-between items-center">
+                        <span class="text-[10px] font-black uppercase text-zinc-500">SEGMENT #${idx+1}</span>
+                        <div class="flex space-x-4">
+                            <button onclick="dupClip(${clip.id})" class="text-[10px] font-black uppercase text-zinc-400 hover:text-white">Copy</button>
+                            <button onclick="delClip(${clip.id})" class="text-[10px] font-black uppercase text-rose-500 hover:text-rose-400">Del</button>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-2 gap-3">
+                        <input type="number" step="0.1" value="${clip.start.toFixed(1)}" onchange="updateClip(${clip.id},'start',this.value)" class="bg-black text-[11px] font-black p-2.5 w-full rounded border border-zinc-800 outline-none">
+                        <input type="number" step="0.1" value="${clip.end.toFixed(1)}" onchange="updateClip(${clip.id},'end',this.value)" class="bg-black text-[11px] font-black p-2.5 w-full rounded border border-zinc-800 outline-none">
+                    </div>`;
+                clipList.appendChild(card);
+            });
+        }
+
+        window.delClip = (id) => { clips = clips.filter(c => c.id !== id); renderTimeline(); saveState(); };
+        window.dupClip = (id) => { const t = clips.find(c => c.id === id); clips.push({...t, id: Date.now()}); renderTimeline(); saveState(); };
+        window.updateClip = (id, k, v) => {
+            const c = clips.find(c => c.id === id);
+            if (c) { c[k] = Math.max(0, Math.min(mainVideo.duration, parseFloat(v))); renderTimeline(); saveState(); }
+        };
+        document.getElementById('clearTimeline').onclick = () => { clips = []; renderTimeline(); saveState(); };
+
+        // --- MP4 시퀀스 통합 렌더링 (크롭 해상도 반영) ---
+        exportBtn.onclick = async () => {
+            if (!clips.length) return alert('No clips to render.');
+            overlay.style.display = 'flex';
+            
+            // 크롭 박스에 따라 자동 계산된 해상도 사용
+            const fw = parseInt(outW.value);
+            const fh = parseInt(outH.value);
+            const bit = parseInt(document.getElementById('quality').value);
+
+            canvas.width = fw;
+            canvas.height = fh;
+            const ctx = canvas.getContext('2d');
+
+            let mimeType = 'video/webm;codecs=vp9,opus';
+            let extension = 'webm';
+            const mp4Types = ['video/mp4;codecs=avc1.42E01E,mp4a.40.2', 'video/mp4;codecs=avc1', 'video/mp4;codecs=h264', 'video/mp4'];
+            for (const type of mp4Types) { if (MediaRecorder.isTypeSupported(type)) { mimeType = type; extension = 'mp4'; break; } }
+
+            const stream = canvas.captureStream(30);
+            const vStream = mainVideo.captureStream ? mainVideo.captureStream() : mainVideo.mozCaptureStream();
+            const aTracks = vStream.getAudioTracks();
+            if (aTracks.length > 0) stream.addTrack(aTracks[0]);
+
+            const recorder = new MediaRecorder(stream, { mimeType, videoBitsPerSecond: bit });
+            const chunks = [];
+            recorder.ondataavailable = e => chunks.push(e.data);
+            recorder.onstop = () => {
+                const blob = new Blob(chunks, { type: mimeType });
+                const a = document.createElement('a');
+                a.href = URL.createObjectURL(blob);
+                a.download = `sequence_full_export_${Date.now()}.${extension}`;
+                a.click();
+                overlay.style.display = 'none';
+            };
+
+            recorder.start();
+            const totalS = getSequenceDuration();
+            let processedS = 0;
+
+            for (let i = 0; i < clips.length; i++) {
+                const clip = clips[i];
+                mainVideo.currentTime = clip.start;
+                await new Promise(r => mainVideo.onseeked = r);
+                mainVideo.play();
+                await new Promise(resolve => {
+                    function bake() {
+                        if (mainVideo.currentTime >= clip.end || mainVideo.paused) {
+                            mainVideo.pause();
+                            resolve();
+                            return;
+                        }
+                        const scaleX = mainVideo.videoWidth / mainVideo.clientWidth;
+                        const scaleY = mainVideo.videoHeight / mainVideo.clientHeight;
+                        const sx = crop.x * scaleX;
+                        const sy = crop.y * scaleY;
+                        const sw = crop.w * scaleX;
+                        const sh = crop.h * scaleY;
+
+                        // 캔버스 크기(fw, fh)에 크롭된 영역(sw, sh)을 꽉 채워 그림
+                        ctx.fillStyle = '#000';
+                        ctx.fillRect(0, 0, fw, fh);
+                        ctx.drawImage(mainVideo, sx, sy, sw, sh, 0, 0, fw, fh);
+
+                        const p = ((processedS + (mainVideo.currentTime - clip.start)) / (totalS || 1)) * 100;
+                        bar.style.width = p + '%';
+                        percent.textContent = Math.floor(p) + '%';
+                        requestAnimationFrame(bake);
+                    }
+                    bake();
+                });
+                processedS += (clip.end - clip.start);
+            }
+            recorder.stop();
+        };
+    </script>
+</body>
+</html>
