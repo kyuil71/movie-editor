@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pro Video Editor - Auto-Resolution Crop & Sequence Export</title>
+    <title>Pro Video Editor - Smooth Playback & Red Shield Handle</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800;900&display=swap');
@@ -27,14 +27,13 @@
         .input-dark { background-color: #000000; border: 1px solid #55555e; border-radius: 6px; color: #ffffff; outline: none; transition: all 0.2s; font-weight: 700; font-size: 13px; }
         .input-dark:read-only { opacity: 0.6; cursor: default; }
 
-        /* 크롭 도구 강화 */
+        /* 크롭 도구 */
         #videoWrapper { position: relative; display: inline-block; line-height: 0; background: #000; border-radius: 8px; overflow: hidden; border: 1px solid #222; }
         #cropBox {
             position: absolute; border: 2px solid #ffffff; box-sizing: border-box;
             display: none; cursor: move; z-index: 10;
             box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.85);
         }
-        /* 크롭 핸들 크기 키움 */
         .handle { position: absolute; width: 16px; height: 16px; background: #ffffff; border: 2px solid #000; border-radius: 4px; z-index: 20; }
         .handle-n { top: -8px; left: calc(50% - 8px); cursor: n-resize; }
         .handle-s { bottom: -8px; left: calc(50% - 8px); cursor: s-resize; }
@@ -45,8 +44,8 @@
         .handle-sw { bottom: -8px; left: -8px; cursor: sw-resize; }
         .handle-se { bottom: -8px; right: -8px; cursor: se-resize; }
 
-        /* 타임라인 */
-        #timelineContainer { padding: 35px 16px 16px; position: relative; background: #0a0a0c; border-top: 3px solid #1a1a1c; }
+        /* 타임라인 패널 */
+        #timelineContainer { padding: 40px 16px 16px; position: relative; background: #0a0a0c; border-top: 3px solid #1a1a1c; }
         #timelineTrack {
             position: relative; height: 56px; background: #000000;
             border-radius: 8px; display: flex; align-items: center; gap: 3px; padding: 4px;
@@ -68,15 +67,16 @@
         }
         .timeline-clip:hover .delete-clip-btn { opacity: 1; }
 
-        /* 화이트 펜타곤 재생 헤드 */
+        /* 이미지 요청사항: 레드 쉴드(방패형) 재생 헤드 디자인 */
         #playhead {
-            position: absolute; top: -25px; width: 2px; height: 105px;
-            background: #ffffff; z-index: 150; pointer-events: none;
-            will-change: left; box-shadow: 0 0 8px rgba(255, 255, 255, 0.3);
+            position: absolute; top: -30px; width: 2px; height: 115px;
+            background: #ef4444; z-index: 150; pointer-events: none;
+            will-change: left; box-shadow: 0 0 12px rgba(239, 68, 68, 0.5);
         }
         #playheadHandle {
-            position: absolute; top: -10px; left: -11px; width: 24px; height: 30px;
-            background: #ffffff; cursor: ew-resize; pointer-events: auto;
+            position: absolute; top: -12px; left: -14px; width: 30px; height: 32px;
+            background: #ef4444; cursor: ew-resize; pointer-events: auto;
+            /* 이미지의 방패 형상 구현 */
             clip-path: polygon(0% 0%, 100% 0%, 100% 70%, 50% 100%, 0% 70%);
             z-index: 151; box-shadow: 0 4px 10px rgba(0,0,0,0.5);
         }
@@ -215,7 +215,7 @@
     <div id="overlay" class="loading-overlay">
         <p class="text-sm font-black uppercase tracking-[0.5em] mb-12 text-white">Rendering Sequence with Crop</p>
         <div class="w-80 bg-zinc-900 h-[3px] relative overflow-hidden rounded-full">
-            <div id="bar" class="absolute top-0 left-0 bg-white h-full w-0 transition-all duration-300"></div>
+            <div id="bar" class="absolute top-0 left-0 bg-white h-full w-0 transition-all duration-300 shadow-[0_0_20px_#fff]"></div>
         </div>
         <p id="percent" class="mt-6 text-xs font-black font-mono text-zinc-400">0%</p>
     </div>
@@ -245,13 +245,12 @@
         const percent = document.getElementById('percent');
 
         let clips = []; 
-        let crop = { x: 0, y: 0, w: 0, h: 0 }; // Display pixels
+        let crop = { x: 0, y: 0, w: 0, h: 0 };
         let isScrubbing = false;
-        let isCropping = false;
         let undoStack = [];
         let seqCurrentTime = 0; 
-        let lastTimestamp = 0;
-
+        
+        // --- 시퀀스 로직 ---
         function getSequenceDuration() {
             return clips.reduce((acc, c) => acc + (c.end - c.start), 0);
         }
@@ -268,47 +267,59 @@
             return clips.length > 0 ? clips[clips.length - 1].end : 0;
         }
 
-        function syncUI(timestamp) {
+        // --- 부드러운 재생 동기화 엔진 (최적화 버전) ---
+        function syncUI() {
             const seqDur = getSequenceDuration();
+            
             if (!mainVideo.paused && !isScrubbing) {
-                if (!lastTimestamp) lastTimestamp = timestamp;
-                const delta = (timestamp - lastTimestamp) / 1000;
-                lastTimestamp = timestamp;
-                seqCurrentTime += delta;
-                if (seqCurrentTime >= seqDur) {
-                    seqCurrentTime = seqDur;
-                    mainVideo.pause();
-                }
-                let accumulated = 0;
-                let targetSourceTime = 0;
+                // 대용량 영상 성능 최적화: 
+                // 강제 JS 시간 가산 대신 실제 비디오의 재생 시점을 시퀀스 시간으로 역산
                 let activeIdx = -1;
+                let accumulatedBefore = 0;
+                
+                // 현재 비디오의 시간 위치가 어떤 클립에 속하는지 확인
                 for (let i = 0; i < clips.length; i++) {
-                    const dur = clips[i].end - clips[i].start;
-                    if (seqCurrentTime <= accumulated + dur) {
-                        targetSourceTime = clips[i].start + (seqCurrentTime - accumulated);
+                    const c = clips[i];
+                    if (mainVideo.currentTime >= c.start && mainVideo.currentTime <= c.end + 0.05) {
                         activeIdx = i;
                         break;
                     }
-                    accumulated += dur;
+                    accumulatedBefore += (c.end - c.start);
                 }
+
                 if (activeIdx !== -1) {
-                    if (Math.abs(mainVideo.currentTime - targetSourceTime) > 0.15) {
-                        mainVideo.currentTime = targetSourceTime;
+                    const c = clips[activeIdx];
+                    seqCurrentTime = accumulatedBefore + (mainVideo.currentTime - c.start);
+
+                    // 클립의 끝에 거의 다다랐을 때 다음 클립으로 점프
+                    if (mainVideo.currentTime >= c.end - 0.05) {
+                        if (activeIdx < clips.length - 1) {
+                            mainVideo.currentTime = clips[activeIdx + 1].start;
+                        } else {
+                            mainVideo.pause();
+                            seqCurrentTime = seqDur;
+                        }
                     }
+
+                    // UI 하이라이트 업데이트
                     document.querySelectorAll('.timeline-clip').forEach((el, idx) => {
                         if (idx === activeIdx) el.classList.add('active');
                         else el.classList.remove('active');
                     });
                 }
-            } else { lastTimestamp = 0; }
+            }
+
+            // 플레이헤드 및 타이머 업데이트
             const ratio = Math.max(0, Math.min(1, seqCurrentTime / (seqDur || 1)));
             playhead.style.left = (ratio * 100) + '%';
             curTimeLabel.textContent = formatTime(seqCurrentTime);
             durTimeLabel.textContent = formatTime(seqDur);
+            
             requestAnimationFrame(syncUI);
         }
         requestAnimationFrame(syncUI);
 
+        // --- 파일 핸들링 ---
         dropZone.onclick = () => videoInput.click();
         videoInput.onchange = (e) => handleFile(e.target.files[0]);
         
@@ -320,7 +331,6 @@
                 dropZone.classList.add('hidden');
                 document.getElementById('editorUI').classList.remove('hidden');
                 clips = [{ id: Date.now(), start: 0, end: mainVideo.duration }];
-                // 초기 크롭은 원본 전체
                 setTimeout(() => {
                     initCrop();
                     renderTimeline();
@@ -329,6 +339,7 @@
             };
         }
 
+        // --- Undo 시스템 ---
         function saveState() {
             const state = JSON.stringify({ clips, crop });
             if (undoStack.length === 0 || undoStack[undoStack.length - 1] !== state) {
@@ -357,6 +368,7 @@
             }
         });
 
+        // --- 타임라인 인터랙션 ---
         function setSequencePos(e) {
             const rect = timelineTrack.getBoundingClientRect();
             const ratio = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
@@ -406,7 +418,7 @@
             }
         };
 
-        // --- 크롭 시스템 (해상도 동기화 포함) ---
+        // --- 크롭 로직 ---
         function initCrop() {
             const vw = mainVideo.clientWidth;
             const vh = mainVideo.clientHeight;
@@ -425,7 +437,6 @@
             cropBox.style.width = crop.w + 'px';
             cropBox.style.height = crop.h + 'px';
 
-            // 비디오 원본 대비 실제 픽셀 해상도 계산 및 출력
             const scaleX = mainVideo.videoWidth / mainVideo.clientWidth;
             const scaleY = mainVideo.videoHeight / mainVideo.clientHeight;
             outW.value = Math.round(crop.w * scaleX);
@@ -536,12 +547,11 @@
         };
         document.getElementById('clearTimeline').onclick = () => { clips = []; renderTimeline(); saveState(); };
 
-        // --- MP4 시퀀스 통합 렌더링 (크롭 해상도 반영) ---
+        // --- MP4 시퀀스 통합 렌더링 ---
         exportBtn.onclick = async () => {
             if (!clips.length) return alert('No clips to render.');
             overlay.style.display = 'flex';
             
-            // 크롭 박스에 따라 자동 계산된 해상도 사용
             const fw = parseInt(outW.value);
             const fh = parseInt(outH.value);
             const bit = parseInt(document.getElementById('quality').value);
@@ -567,7 +577,7 @@
                 const blob = new Blob(chunks, { type: mimeType });
                 const a = document.createElement('a');
                 a.href = URL.createObjectURL(blob);
-                a.download = `sequence_full_export_${Date.now()}.${extension}`;
+                a.download = `sequence_export_${Date.now()}.${extension}`;
                 a.click();
                 overlay.style.display = 'none';
             };
@@ -595,7 +605,6 @@
                         const sw = crop.w * scaleX;
                         const sh = crop.h * scaleY;
 
-                        // 캔버스 크기(fw, fh)에 크롭된 영역(sw, sh)을 꽉 채워 그림
                         ctx.fillStyle = '#000';
                         ctx.fillRect(0, 0, fw, fh);
                         ctx.drawImage(mainVideo, sx, sy, sw, sh, 0, 0, fw, fh);
