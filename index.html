@@ -2563,15 +2563,32 @@ function seekSource(sourceId, time, cb, initialOpacity){
   setActiveSource(sourceId, initialOpacity);
   const v = (state.sources[sourceId]||{}).el;
   if(!v){ if(cb) cb(); return; }
+  function finishSeek(){
+    paintWhenReady(v);
+    if(cb) cb();
+  }
   function doSeek(){
+    const target = Math.min(Math.max(time,0), (v.duration||time) || time);
+    let settled = false;
     function onSeeked(){
+      if(settled) return;
+      settled = true;
       v.removeEventListener('seeked', onSeeked);
-      paintWhenReady(v);
-      if(cb) cb();
+      finishSeek();
     }
     v.addEventListener('seeked', onSeeked);
-    try{ v.currentTime = Math.min(Math.max(time,0), (v.duration||time) || time); }
-    catch(e){ onSeeked(); }
+    /* ⚠ Always assign currentTime — even if it looks like the same value —
+       so the browser actually (re)decodes and displays that frame. Skipping
+       the assignment when "already there" left the canvas/video blank in
+       many cases (first frame after import, repeated scrubs, etc). */
+    try{ v.currentTime = target; }
+    catch(e){ onSeeked(); return; }
+    /* Safety net only: some browsers legitimately never fire 'seeked' for
+       a true no-op seek (target === current position to the millisecond).
+       If that happens, this timeout still lets playback/scrubbing proceed
+       instead of hanging forever — but the real seek above always runs
+       first, so this is a fallback, not the primary path. */
+    setTimeout(function(){ if(!settled) onSeeked(); }, 900);
   }
   if(v.readyState>=1) doSeek();
   else v.addEventListener('loadedmetadata', doSeek, { once:true });
@@ -3145,9 +3162,28 @@ function updatePlaceholder(){
   trackEmpty.classList.toggle('hidden', !empty);
   if(empty) activeSourceNone();
 }
+let prevClipCount = 0;
+function fitZoomToContent(){
+  const dur = totalDuration();
+  if(dur <= 0) return;
+  const areaWidth = Math.max(100, tlScroll.clientWidth - LABEL_WIDTH);
+  /* ⚠ The zoom slider's minimum is calibrated so 600s (10 min) fits the
+     screen — but real footage is almost always far shorter than that.
+     Starting at that minimum turns short clips into an unclickable sliver
+     a few pixels wide, so any click/scrub lands past the end and always
+     shows the last frame. Instead, fit the ACTUAL content to the visible
+     width (with a little padding) the first time clips appear. */
+  let px = areaWidth / (dur * 1.15);
+  px = Math.max(state.minPxPerSec, Math.min(30, px));
+  state.pxPerSec = px;
+}
 function afterChange(){
   const dur = totalDuration();
   if(state.playhead > dur) state.playhead = dur;
+  if(prevClipCount === 0 && state.clips.length > 0){
+    fitZoomToContent();
+  }
+  prevClipCount = state.clips.length;
   renderTimeline();
   updatePlaceholder();
   if(!state.isPlaying) seekPreview(state.playhead);
@@ -3266,11 +3302,12 @@ function computeResolution(){
 
 function seekExact(v, t){
   return new Promise(function(resolve){
+    const target = Math.min(Math.max(t,0), (v.duration || t) || t);
     let done = false;
     function finish(){ if(done) return; done = true; v.removeEventListener('seeked', onSeeked); resolve(); }
     function onSeeked(){ finish(); }
     v.addEventListener('seeked', onSeeked);
-    try{ v.currentTime = Math.min(Math.max(t,0), (v.duration || t) || t); }
+    try{ v.currentTime = target; }
     catch(e){ finish(); }
     setTimeout(finish, 1200);
   });
