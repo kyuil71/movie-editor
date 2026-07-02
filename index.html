@@ -58,8 +58,15 @@ button{font-family:inherit;}
 .bin-header{padding:10px 12px;font-size:11px;color:var(--muted);letter-spacing:1px;
   text-transform:uppercase;border-bottom:1px solid var(--border);}
 .bin-list{flex:1;overflow-y:auto;padding:6px;}
-.bin-item{display:flex;gap:8px;padding:6px;border-radius:8px;cursor:pointer;align-items:center;}
+.bin-item{display:flex;gap:8px;padding:6px 22px 6px 6px;border-radius:8px;cursor:pointer;align-items:center;position:relative;}
 .bin-item:hover{background:var(--panel2);}
+.bin-item:hover .bin-remove{opacity:1;}
+.bin-remove{position:absolute;top:3px;right:3px;width:18px;height:18px;border-radius:5px;
+  background:rgba(20,21,26,.85);border:1px solid var(--border);color:var(--muted);
+  display:flex;align-items:center;justify-content:center;cursor:pointer;opacity:0;
+  transition:opacity .12s,background .12s,color .12s;flex:none;z-index:2;}
+.bin-remove:hover{background:var(--danger);border-color:var(--danger);color:#fff;}
+.bin-remove svg{width:10px;height:10px;pointer-events:none;}
 .bin-thumb{width:52px;height:32px;border-radius:5px;background-size:cover;background-position:center;
   background-color:#111;flex:none;position:relative;overflow:hidden;}
 .bin-swatch{position:absolute;left:0;top:0;bottom:0;width:4px;}
@@ -287,6 +294,7 @@ button{font-family:inherit;}
           <option value="1" selected>1초</option>
           <option value="1.5">1.5초</option>
           <option value="2">2초</option>
+          <option value="2.5">2.5초</option>
           <option value="3">3초</option>
           <option value="3.5">3.5초</option>
           <option value="4">4초</option>
@@ -2368,7 +2376,13 @@ function pushHistory(){
 function undo(){
   if(state.history.length===0){ toast('되돌릴 내용이 없습니다.','warn'); return; }
   const snap = state.history.pop();
-  state.clips = JSON.parse(snap);
+  let restored = JSON.parse(snap);
+  const droppedCount = restored.length;
+  restored = restored.filter(function(c){ return !!state.sources[c.sourceId]; });
+  if(restored.length < droppedCount){
+    toast('일부 클립은 원본 미디어가 제거되어 복원할 수 없습니다.', 'warn');
+  }
+  state.clips = restored;
   if(!state.clips.find(c=>c.id===state.selectedId)) state.selectedId=null;
   afterChange();
   toast('되돌렸습니다.','info');
@@ -2482,6 +2496,9 @@ function addBinItem(src){
     '<div class="bin-meta">'+
       '<div class="bin-name" title="'+escapeHtml(src.name)+'">'+escapeHtml(src.name)+'</div>'+
       '<div class="bin-dur">'+fmtTime(src.duration)+'</div>'+
+    '</div>'+
+    '<div class="bin-remove" title="미디어 제거">'+
+      '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 6l12 12M18 6L6 18"/></svg>'+
     '</div>';
   item.addEventListener('click', ()=>{
     pushHistory();
@@ -2489,7 +2506,42 @@ function addBinItem(src){
     afterChange();
     toast(src.name+' 클립을 타임라인에 추가했습니다.', 'info');
   });
+  item.querySelector('.bin-remove').addEventListener('click', function(e){
+    e.stopPropagation();
+    removeSource(src.id);
+  });
   binList.appendChild(item);
+}
+
+function removeSource(sourceId){
+  const src = state.sources[sourceId];
+  if(!src) return;
+  const usedByClips = state.clips.some(function(c){ return c.sourceId === sourceId; });
+  if(usedByClips){
+    const ok = window.confirm(src.name + ' 미디어를 제거하면 타임라인에 있는 이 영상의 클립도 함께 삭제됩니다. 계속하시겠습니까?');
+    if(!ok) return;
+  }
+  pushHistory();
+
+  if(state.isPlaying && state.activeSourceId === sourceId) pause();
+  if(state.activeSourceId === sourceId) activeSourceNone();
+
+  state.clips = state.clips.filter(function(c){ return c.sourceId !== sourceId; });
+  if(state.selectedId && !state.clips.find(function(c){ return c.id===state.selectedId; })){
+    state.selectedId = null;
+  }
+
+  try{ src.el.pause(); src.el.removeAttribute('src'); src.el.load(); }catch(e){}
+  if(src.el.parentNode) src.el.parentNode.removeChild(src.el);
+  try{ URL.revokeObjectURL(src.url); }catch(e){}
+  delete state.sources[sourceId];
+
+  const item = binList.querySelector('.bin-item[data-id="'+sourceId+'"]');
+  if(item) item.remove();
+  if(Object.keys(state.sources).length === 0) binEmpty.classList.remove('hidden');
+
+  afterChange();
+  toast(src.name+' 미디어를 제거했습니다.', 'info');
 }
 
 /* =========================================================
@@ -2698,7 +2750,7 @@ function play(){
   seekSource(c.sourceId, srcTime, function(){
     const f = clipFadeFactor(c, loc.offset);
     if(activeEl) activeEl.style.opacity = String(f);
-    applyAudioLevel(f * (c.volume||1));
+    applyAudioLevel(f * ((c.volume==null?1:c.volume)));
     const p = activeEl ? activeEl.play() : Promise.resolve();
     (p || Promise.resolve()).then(function(){
       state.isPlaying = true;
@@ -2718,7 +2770,7 @@ function pause(){
     const c = state.clips[loc.index];
     const f = clipFadeFactor(c, loc.offset);
     if(activeEl) activeEl.style.opacity = String(f);
-    applyAudioLevel(f*(c.volume||1));
+    applyAudioLevel(f*((c.volume==null?1:c.volume)));
   } else {
     applyAudioLevel(1);
   }
@@ -2752,7 +2804,7 @@ function tick(){
   updatePlayheadUI();
   const f = clipFadeFactor(c, offset);
   v.style.opacity = String(f);
-  applyAudioLevel(f * (c.volume||1));
+  applyAudioLevel(f * ((c.volume==null?1:c.volume)));
   requestAnimationFrame(tick);
 }
 
@@ -2774,13 +2826,13 @@ function advanceClip(){
     const v = activeEl;
     const f = clipFadeFactor(next, 0);
     if(v) v.style.opacity = String(f);
-    applyAudioLevel(f * (next.volume||1));
+    applyAudioLevel(f * ((next.volume==null?1:next.volume)));
   } else {
     const f0 = clipFadeFactor(next, 0);
     seekSource(next.sourceId, next.in, function(){
       const f = clipFadeFactor(next, 0);
       if(activeEl) activeEl.style.opacity = String(f);
-      applyAudioLevel(f * (next.volume||1));
+      applyAudioLevel(f * ((next.volume==null?1:next.volume)));
       if(activeEl) activeEl.play().catch(function(){});
     }, f0);
   }
@@ -3549,7 +3601,7 @@ async function exportRecording(){
     try{ octx.drawImage(v, (width-dw)/2, (height-dh)/2, dw, dh); }catch(e){}
     if(f<0.999){ octx.fillStyle = 'rgba(0,0,0,'+(1-f)+')'; octx.fillRect(0,0,width,height); }
     if(videoTrack && videoTrack.requestFrame) videoTrack.requestFrame();
-    applyAudioLevel(f * (c.volume||1));
+    applyAudioLevel(f * ((c.volume==null?1:c.volume)));
     lastProgress = performance.now();
 
     state.playhead = clipStart(state.activeIdx) + offset;
