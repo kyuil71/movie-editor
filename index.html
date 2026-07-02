@@ -2362,6 +2362,21 @@ function clipFadeFactor(c, offset){
   if(fo>0 && offset > dur-fo) f = Math.min(f, Math.max(0,(dur-offset))/fo);
   return Math.max(0, Math.min(1, f));
 }
+/* Volume slider shows an intuitive -100%..+100% range, but the gain curve
+   is intentionally asymmetric:
+   - Negative side is linear down to 0 at -100% (true silence).
+   - Positive side is boosted (BOOST_FACTOR) so +100% gives a clearly
+     audible increase instead of a barely-noticeable 2x gain. */
+const VOLUME_BOOST_FACTOR = 4;
+function pctToVolume(pct){
+  if(pct >= 0) return 1 + (pct/100) * VOLUME_BOOST_FACTOR;
+  return 1 + (pct/100);
+}
+function volumeToPct(vol){
+  if(vol == null) vol = 1;
+  if(vol >= 1) return Math.round(((vol-1)/VOLUME_BOOST_FACTOR) * 100);
+  return Math.round((vol-1) * 100);
+}
 function escapeHtml(s){
   return String(s).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 }
@@ -2716,7 +2731,7 @@ function ensureAudioGraph(){
   if(state.audio.ctx.state === 'suspended') state.audio.ctx.resume();
 }
 function applyAudioLevel(level){
-  level = Math.max(0, Math.min(2, level));
+  level = Math.max(0, Math.min(1 + VOLUME_BOOST_FACTOR, level));
   if(state.audio.gain){
     state.audio.gain.gain.value = level;
     if(activeEl) activeEl.volume = 1;
@@ -2917,7 +2932,7 @@ function renderTimeline(){
     if(c.fadeOut>0) html += '<div class="fade fade-out" style="width:'+(c.fadeOut*state.pxPerSec)+'px"></div>';
     const vol = c.volume==null?1:c.volume;
     if(Math.abs(vol-1)>0.001){
-      const pct = Math.round((vol-1)*100);
+      const pct = volumeToPct(vol);
       html += '<div class="clip-vol-badge"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M4 9v6h4l5 5V4L8 9H4z"/></svg>'+(pct>0?'+':'')+pct+'%</div>';
     }
     el.innerHTML = html;
@@ -3154,7 +3169,7 @@ let volDragActive = false;
 let volInputEditing = false;
 
 function applyVolumeLive(c, pct){
-  c.volume = 1 + pct/100;
+  c.volume = pctToVolume(pct);
   renderTimeline();
   if(!state.isPlaying){
     const loc = locate(state.playhead);
@@ -3196,7 +3211,7 @@ volInput.addEventListener('keydown', function(e){
 function updateVolumeUI(){
   const c = targetClip();
   if(c){
-    const pct = Math.round(((c.volume==null?1:c.volume) - 1)*100);
+    const pct = volumeToPct(c.volume);
     volSlider.value = String(pct);
     if(document.activeElement !== volInput) volInput.value = String(pct);
   } else {
