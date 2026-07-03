@@ -3330,10 +3330,10 @@ async function startExport(){
   showExportOverlay(true, '준비 중...', 0);
   let savedFilename = null;
   try{
-    if(supportsWebCodecs()){
+    if(await supportsWebCodecs()){
       savedFilename = await exportPrecise();
     } else {
-      toast('이 브라우저는 정밀 인코딩을 지원하지 않아 녹화 방식으로 내보냅니다.','warn');
+      toast('이 브라우저는 정밀 인코딩(H.264+AAC)을 지원하지 않아 녹화 방식으로 내보냅니다.','warn');
       savedFilename = await exportRecording();
     }
     toast((savedFilename||'파일')+' 이 다운로드 폴더에 저장되었습니다.', 'info');
@@ -3345,11 +3345,28 @@ async function startExport(){
     seekPreview(state.playhead);
   }
 }
-function supportsWebCodecs(){
-  return typeof window.VideoEncoder !== 'undefined' &&
-         typeof window.AudioEncoder !== 'undefined' &&
-         typeof window.VideoFrame !== 'undefined' &&
-         !!window.Mp4Muxer;
+async function supportsWebCodecs(){
+  if(typeof window.VideoEncoder === 'undefined' ||
+     typeof window.AudioEncoder === 'undefined' ||
+     typeof window.VideoFrame === 'undefined' ||
+     !window.Mp4Muxer) return false;
+  /* ⚠ The APIs existing isn't enough — some Chromium builds expose
+     VideoEncoder/AudioEncoder but lack an actual AAC encoder (licensing),
+     which would only fail later, mid-export, with a confusing error.
+     Verify H.264 AND AAC are both genuinely encodable up front, and fall
+     back to the recording path otherwise so export never crashes. */
+  try{
+    const codecs = ['avc1.640028','avc1.4D4028','avc1.42E01E'];
+    let videoOk = false;
+    for(const codec of codecs){
+      const s = await VideoEncoder.isConfigSupported({ codec, width:1280, height:720, bitrate:8000000, framerate:60 });
+      if(s && s.supported){ videoOk = true; break; }
+    }
+    if(!videoOk) return false;
+    const aSupport = await AudioEncoder.isConfigSupported({ codec:'mp4a.40.2', sampleRate:48000, numberOfChannels:2, bitrate:192000 });
+    if(!aSupport || !aSupport.supported) return false;
+  }catch(e){ return false; }
+  return true;
 }
 
 function getUsedSourceIds(){
@@ -3358,25 +3375,40 @@ function getUsedSourceIds(){
   return Object.keys(set);
 }
 function computeResolution(){
-  let maxH = 0;
-  getUsedSourceIds().forEach(function(id){
-    const s = state.sources[id];
-    if(s && s.el.videoHeight > maxH) maxH = s.el.videoHeight;
-  });
-  const use1080 = maxH >= 900;
-  return use1080 ? { width:1920, height:1080, bitrate:16000000 } : { width:1280, height:720, bitrate:10000000 };
+  /* Fixed output: 1280x720 @ ~8Mbps. Sources of any aspect ratio are
+     letterboxed to fit within this 16:9 frame (handled in
+     drawSourceFrameToCanvas). This keeps encoding fast and predictable
+     regardless of source resolution. */
+  return { width:1280, height:720, bitrate:8000000 };
 }
-
-function seekExact(v, t){
+function drawSourceFrameToCanvas(ctx, v, w, h, fadeFactor){
+  ctx.fillStyle = '#000';
+  ctx.fillRect(0,0,w,h);
+  const vw = v.videoWidth||w, vh = v.videoHeight||h;
+  const scale = Math.min(w/vw, h/vh) || 1;
+  const dw = vw*scale, dh = vh*scale;
+  try{ ctx.drawImage(v, (w-dw)/2, (h-dh)/2, dw, dh); }catch(e){}
+  if(fadeFactor < 0.999){
+    ctx.fillStyle = 'rgba(0,0,0,' + (1-fadeFactor) + ')';
+    ctx.fillRect(0,0,w,h);
+  }
+}
+/* Seek once to a clip's start, then wait for a REAL decoded frame to be
+   presented (via requestVideoFrameCallback) before capture begins — never
+   used for per-frame scrubbing, only the single start-of-clip seek. */
+function seekAndAwaitFrame(v, time){
   return new Promise(function(resolve){
-    const target = Math.min(Math.max(t,0), (v.duration || t) || t);
-    let done = false;
-    function finish(){ if(done) return; done = true; v.removeEventListener('seeked', onSeeked); resolve(); }
-    function onSeeked(){ finish(); }
+    let settled = false;
+    function finish(){ if(settled) return; settled = true; resolve(); }
+    function afterSeeked(){
+      if(v.requestVideoFrameCallback){ v.requestVideoFrameCallback(function(){ finish(); }); }
+      else { setTimeout(finish, 50); }
+    }
+    function onSeeked(){ v.removeEventListener('seeked', onSeeked); afterSeeked(); }
     v.addEventListener('seeked', onSeeked);
-    try{ v.currentTime = target; }
+    try{ v.currentTime = Math.min(Math.max(time,0), (v.duration||time)||time); }
     catch(e){ finish(); }
-    setTimeout(finish, 1200);
+    setTimeout(finish, 1500);
   });
 }
 
@@ -3391,8 +3423,8 @@ function downloadBlob(blob, filename){
 }
 
 async function exportPrecise(){
+  const EXPORT_FPS = 60;
   const dur = totalDuration();
-  const totalFrames = Math.max(1, Math.round(dur*FPS));
   const { width, height, bitrate } = computeResolution();
   const filename = 'kvideo_export_' + Date.now() + '.mp4';
   updateExportNote(filename);
@@ -3405,26 +3437,13 @@ async function exportPrecise(){
   let chosenCodec = null;
   for(const codec of codecCandidates){
     try{
-      const support = await VideoEncoder.isConfigSupported({ codec, width, height, bitrate, framerate:FPS });
+      const support = await VideoEncoder.isConfigSupported({ codec, width, height, bitrate, framerate:EXPORT_FPS });
       if(support && support.supported){ chosenCodec = codec; break; }
     }catch(e){}
   }
   if(!chosenCodec) throw new Error('지원되는 비디오 코덱이 없습니다.');
 
-  const muxer = new Mp4Muxer.Muxer({
-    target: new Mp4Muxer.ArrayBufferTarget(),
-    video: { codec:'avc', width, height },
-    audio: { codec:'aac', numberOfChannels:2, sampleRate:48000 },
-    fastStart: 'in-memory'
-  });
-
-  const videoEncoder = new VideoEncoder({
-    output: function(chunk, meta){ muxer.addVideoChunk(chunk, meta); },
-    error: function(e){ throw e; }
-  });
-  videoEncoder.configure({ codec: chosenCodec, width, height, bitrate, framerate: FPS });
-
-  /* ---- audio render ---- */
+  /* ---- 1) audio: offline render (PCM) first ---- */
   showExportOverlay(true, '오디오 처리 중...', 0);
   const sampleRate = 48000;
   const offlineCtx = new OfflineAudioContext(2, Math.ceil((dur+1)*sampleRate), sampleRate);
@@ -3438,6 +3457,7 @@ async function exportPrecise(){
       decodedBuffers[sid] = await offlineCtx.decodeAudioData(arr);
     }catch(e){ decodedBuffers[sid] = null; }
   }
+  const hasAnyAudio = usedIds.some(function(sid){ return !!decodedBuffers[sid]; });
   let cs = 0;
   for(const c of state.clips){
     const buf = decodedBuffers[c.sourceId];
@@ -3448,7 +3468,9 @@ async function exportPrecise(){
       const gainNode = offlineCtx.createGain();
       srcNode.connect(gainNode);
       gainNode.connect(offlineCtx.destination);
-      const vol = c.volume==null?1:c.volume;
+      /* ⚠ volume 0 (mute) must stay 0 — only substitute 1 when volume is
+         genuinely unset (null/undefined), never via a falsy-OR check. */
+      const vol = c.volume==null ? 1 : c.volume;
       const fi = Math.min(c.fadeIn||0, cdur);
       const fo = Math.min(c.fadeOut||0, cdur);
       const t0 = cs;
@@ -3465,65 +3487,162 @@ async function exportPrecise(){
     }
     cs += cdur;
   }
-  const rendered = await offlineCtx.startRendering();
+  const rendered = hasAnyAudio ? await offlineCtx.startRendering() : null;
 
-  const audioEncoder = new AudioEncoder({
-    output: function(chunk, meta){ muxer.addAudioChunk(chunk, meta); },
+  /* ---- 2) configure muxer + video encoder (faststart, zero-aligned) ---- */
+  const muxerConfig = {
+    target: new Mp4Muxer.ArrayBufferTarget(),
+    video: { codec:'avc', width, height },
+    fastStart: 'in-memory',
+    firstTimestampBehavior: 'offset'
+  };
+  if(hasAnyAudio) muxerConfig.audio = { codec:'aac', numberOfChannels:2, sampleRate:48000 };
+  const muxer = new Mp4Muxer.Muxer(muxerConfig);
+
+  const videoEncoder = new VideoEncoder({
+    output: function(chunk, meta){ muxer.addVideoChunk(chunk, meta); },
     error: function(e){ throw e; }
   });
-  audioEncoder.configure({ codec:'mp4a.40.2', sampleRate:48000, numberOfChannels:2, bitrate:192000 });
+  videoEncoder.configure({ codec: chosenCodec, width, height, bitrate, framerate: EXPORT_FPS, latencyMode: 'quality' });
 
-  const chunkSize = 1024;
-  const numFrames = rendered.length;
-  const ch0 = rendered.getChannelData(0);
-  const ch1 = rendered.numberOfChannels>1 ? rendered.getChannelData(1) : ch0;
-  for(let i=0;i<numFrames;i+=chunkSize){
-    const len = Math.min(chunkSize, numFrames-i);
-    const planar = new Float32Array(len*2);
-    planar.set(ch0.subarray(i,i+len), 0);
-    planar.set(ch1.subarray(i,i+len), len);
-    const audioData = new AudioData({
-      format:'f32-planar', sampleRate:48000, numberOfFrames:len, numberOfChannels:2,
-      timestamp: Math.round(i/48000*1e6), data: planar
-    });
-    if(audioEncoder.encodeQueueSize>8) await new Promise(function(r){ setTimeout(r,0); });
-    audioEncoder.encode(audioData);
-    audioData.close();
-  }
-  await audioEncoder.flush();
-
-  /* ---- video render ---- */
+  /* ---- 3) video: play each clip at 1x, capture only frames the decoder
+     actually displays (requestVideoFrameCallback), and fill a fixed 60fps
+     grid by holding the last captured frame — never seek per frame. ---- */
   showExportOverlay(true, '영상 인코딩 중... 0%', 0);
-  const frameDurUs = Math.round(1e6/FPS);
-  for(let i=0;i<totalFrames;i++){
-    const t = Math.min(i/FPS, Math.max(0,dur-0.0005));
-    const loc = locate(t) || { index: state.clips.length-1, offset: 0 };
-    const c = state.clips[loc.index];
-    const src = state.sources[c.sourceId];
-    if(src){
-      const srcTime = c.in + loc.offset;
-      await seekExact(src.el, srcTime);
-      octx.fillStyle = '#000'; octx.fillRect(0,0,width,height);
-      const vw = src.el.videoWidth||width, vh = src.el.videoHeight||height;
-      const scale = Math.min(width/vw, height/vh) || 1;
-      const dw = vw*scale, dh = vh*scale;
-      try{ octx.drawImage(src.el, (width-dw)/2, (height-dh)/2, dw, dh); }catch(e){}
-      const f = clipFadeFactor(c, loc.offset);
-      if(f<0.999){ octx.fillStyle = 'rgba(0,0,0,'+(1-f)+')'; octx.fillRect(0,0,width,height); }
-    } else {
-      octx.fillStyle = '#000'; octx.fillRect(0,0,width,height);
-    }
-    const frame = new VideoFrame(off, { timestamp: i*frameDurUs, duration: frameDurUs });
-    const keyFrame = (i % (FPS*2)) === 0;
-    if(videoEncoder.encodeQueueSize>4) await new Promise(function(r){ setTimeout(r,0); });
-    videoEncoder.encode(frame, { keyFrame });
-    frame.close();
-    if(i % 5 === 0){
-      const pct = Math.round(i/totalFrames*100);
-      showExportOverlay(true, '영상 인코딩 중... ' + pct + '%', pct);
+  const frameDurUs = Math.round(1e6/EXPORT_FPS);
+  const totalFrames = Math.max(1, Math.round(dur*EXPORT_FPS));
+  let globalFrameIndex = 0;
+
+  async function encodeGridSlotsUpTo(targetTime, vForBackpressure){
+    while(globalFrameIndex < totalFrames && (globalFrameIndex/EXPORT_FPS) <= targetTime + 1e-6){
+      if(videoEncoder.encodeQueueSize > 12){
+        /* Encoder is falling behind: pause the source (don't drop frames,
+           don't let it race ahead) until the queue drains, then resume. */
+        const wasPlaying = vForBackpressure && !vForBackpressure.paused;
+        if(wasPlaying){ try{ vForBackpressure.pause(); }catch(e){} }
+        while(videoEncoder.encodeQueueSize > 4){
+          await new Promise(function(r){ setTimeout(r, 8); });
+        }
+        if(wasPlaying){ try{ await vForBackpressure.play(); }catch(e){} }
+      }
+      const ts = Math.round(globalFrameIndex * frameDurUs);
+      const keyFrame = (globalFrameIndex % EXPORT_FPS) === 0; // every 1s at 60fps
+      const frame = new VideoFrame(off, { timestamp: ts, duration: frameDurUs });
+      videoEncoder.encode(frame, { keyFrame });
+      frame.close();
+      globalFrameIndex++;
+      if(globalFrameIndex % 12 === 0){
+        const pct = Math.round(globalFrameIndex/totalFrames*100);
+        showExportOverlay(true, '영상 인코딩 중... ' + pct + '%', pct);
+      }
     }
   }
+
+  function captureClipPlaythrough(c, clipStartTimeline, v){
+    return new Promise(async function(resolve){
+      const cdurVal = clipDur(c);
+      const wasMuted = v.muted;
+      v.muted = true; // ⚠ never let capture playback be audible
+      try{ v.playbackRate = 1; }catch(e){} // ⚠ always 1x, never fast-forward
+      setActiveSource(c.sourceId, 0);
+
+      let finished = false;
+      let watchdogTimer = null;
+      function resetWatchdog(){
+        if(watchdogTimer) clearTimeout(watchdogTimer);
+        /* If this clip produces no new frame for 3.5s, bail out on just
+           this clip so the whole export never hangs. */
+        watchdogTimer = setTimeout(function(){ finish(); }, 3500);
+      }
+      function finish(){
+        if(finished) return;
+        finished = true;
+        if(watchdogTimer) clearTimeout(watchdogTimer);
+        try{ v.pause(); }catch(e){}
+        v.muted = wasMuted;
+        resolve();
+      }
+
+      await seekAndAwaitFrame(v, c.in); // the ONLY seek for this clip
+      if(finished) return;
+      drawSourceFrameToCanvas(octx, v, width, height, clipFadeFactor(c, 0));
+      await encodeGridSlotsUpTo(clipStartTimeline, v);
+      if(finished) return;
+
+      resetWatchdog();
+
+      function onFrame(now, metadata){
+        if(finished) return;
+        resetWatchdog();
+        const mediaTime = (metadata && metadata.mediaTime != null) ? metadata.mediaTime : v.currentTime;
+        let offset = mediaTime - c.in;
+        offset = Math.max(0, Math.min(cdurVal, offset));
+        const f = clipFadeFactor(c, offset);
+        drawSourceFrameToCanvas(octx, v, width, height, f);
+        const targetTimelineTime = clipStartTimeline + offset;
+        const reachedEnd = (offset >= cdurVal - 0.0008) || v.ended;
+        encodeGridSlotsUpTo(targetTimelineTime, v).then(function(){
+          if(finished) return;
+          if(reachedEnd){
+            /* Fill any remaining grid slots for this clip with the last
+               captured frame so the next clip starts exactly on time. */
+            encodeGridSlotsUpTo(clipStartTimeline + cdurVal, v).then(finish);
+            return;
+          }
+          if(v.requestVideoFrameCallback) v.requestVideoFrameCallback(onFrame);
+          else setTimeout(function(){ onFrame(performance.now(), { mediaTime: v.currentTime }); }, 1000/60);
+        });
+      }
+      if(v.requestVideoFrameCallback) v.requestVideoFrameCallback(onFrame);
+      try{ await v.play(); }catch(e){ finish(); }
+    });
+  }
+
+  let clipStartAcc = 0;
+  for(const c of state.clips){
+    const cdurVal = clipDur(c);
+    const src = state.sources[c.sourceId];
+    if(!src || cdurVal <= 0.0005){
+      octx.fillStyle = '#000'; octx.fillRect(0,0,width,height);
+      await encodeGridSlotsUpTo(clipStartAcc + cdurVal, null);
+    } else {
+      await captureClipPlaythrough(c, clipStartAcc, src.el);
+    }
+    clipStartAcc += cdurVal;
+  }
+  await encodeGridSlotsUpTo(dur + 1, null); // mop up any rounding leftovers
   await videoEncoder.flush();
+
+  /* ---- 4) audio: encode the already-rendered PCM to AAC ---- */
+  if(hasAnyAudio && rendered){
+    showExportOverlay(true, '오디오 인코딩 중...', 100);
+    const audioEncoder = new AudioEncoder({
+      output: function(chunk, meta){ muxer.addAudioChunk(chunk, meta); },
+      error: function(e){ throw e; }
+    });
+    audioEncoder.configure({ codec:'mp4a.40.2', sampleRate:48000, numberOfChannels:2, bitrate:192000 });
+
+    const chunkSize = 1024;
+    const numFrames = rendered.length;
+    const ch0 = rendered.getChannelData(0);
+    const ch1 = rendered.numberOfChannels>1 ? rendered.getChannelData(1) : ch0;
+    for(let i=0;i<numFrames;i+=chunkSize){
+      const len = Math.min(chunkSize, numFrames-i);
+      const planar = new Float32Array(len*2);
+      planar.set(ch0.subarray(i,i+len), 0);
+      planar.set(ch1.subarray(i,i+len), len);
+      const audioData = new AudioData({
+        format:'f32-planar', sampleRate:48000, numberOfFrames:len, numberOfChannels:2,
+        timestamp: Math.round(i/48000*1e6), data: planar
+      });
+      if(audioEncoder.encodeQueueSize>8) await new Promise(function(r){ setTimeout(r,0); });
+      audioEncoder.encode(audioData);
+      audioData.close();
+    }
+    await audioEncoder.flush();
+  }
+
+  /* ---- 5) finalize ---- */
   showExportOverlay(true, '마무리 중...', 100);
   muxer.finalize();
   const buffer = muxer.target.buffer;
@@ -3535,119 +3654,149 @@ async function exportPrecise(){
 async function exportRecording(){
   const dur = totalDuration();
   const { width, height } = computeResolution();
-  const off = document.createElement('canvas');
-  off.width = width; off.height = height;
-  const octx = off.getContext('2d');
-
-  ensureAudioGraph();
-  const stream = off.captureStream ? off.captureStream(0) : off.captureStream();
-  const audioTrack = state.audio.dest.stream.getAudioTracks()[0];
-  if(audioTrack) stream.addTrack(audioTrack);
 
   const mimeCandidates = [
     'video/mp4;codecs=avc1.640028,mp4a.40.2',
     'video/mp4;codecs=h264,aac',
-    'video/mp4',
     'video/webm;codecs=vp9,opus',
     'video/webm;codecs=vp8,opus',
     'video/webm'
   ];
-  let mime = null;
-  for(const m of mimeCandidates){
-    if(window.MediaRecorder && MediaRecorder.isTypeSupported && MediaRecorder.isTypeSupported(m)){ mime = m; break; }
-  }
-  if(!mime) throw new Error('지원되는 녹화 형식이 없습니다.');
-  const ext = mime.indexOf('mp4') === 0 || mime.indexOf('video/mp4')===0 ? 'mp4' : 'webm';
-  const filename = 'kvideo_export_' + Date.now() + '.' + ext;
-  updateExportNote(filename);
-
-  const rec = new MediaRecorder(stream, { mimeType: mime, videoBitsPerSecond: (width>=1920?16000000:10000000) });
-  const chunks = [];
-  rec.ondataavailable = function(e){ if(e.data && e.data.size>0) chunks.push(e.data); };
-
-  let settled = false;
-  const finishPromise = new Promise(function(resolve, reject){
-    rec.onstop = function(){ resolve(); };
-    rec.onerror = function(e){ reject((e && e.error) || new Error('녹화 오류')); };
+  const supportedMimes = mimeCandidates.filter(function(m){
+    return window.MediaRecorder && MediaRecorder.isTypeSupported && MediaRecorder.isTypeSupported(m);
   });
+  if(supportedMimes.length===0) throw new Error('지원되는 녹화 형식이 없습니다.');
 
-  pause();
-  state.playhead = 0;
-  const first = state.clips[0];
-  await new Promise(function(res){ seekSource(first.sourceId, first.in, res); });
-
-  const videoTrack = stream.getVideoTracks()[0];
-  rec.start(200);
-  let lastProgress = performance.now();
-  const watchdog = setInterval(function(){
-    if(performance.now() - lastProgress > 6000){
-      clearInterval(watchdog);
-      try{ rec.stop(); }catch(e){}
+  let lastError = null;
+  for(const mime of supportedMimes){
+    try{
+      return await attemptRecordingWithMime(mime, dur, width, height);
+    }catch(err){
+      console.warn('recording attempt failed for', mime, err);
+      lastError = err;
+      try{ pause(); }catch(e){}
+      toast(mime + ' 형식으로 녹화 중 오류가 발생해 다른 형식으로 재시도합니다.', 'warn');
     }
-  }, 1000);
-
-  state.isPlaying = true;
-  state.activeIdx = 0;
-  ensureAudioGraph();
-  if(activeEl) activeEl.play().catch(function(){});
-  showExportOverlay(true, '녹화 중... 0%', 0);
-
-  let finished = false;
-  function finalizeRec(){
-    if(finished) return;
-    finished = true;
-    state.isPlaying = false;
-    clearInterval(watchdog);
-    try{ rec.stop(); }catch(e){}
   }
+  throw lastError || new Error('녹화에 실패했습니다.');
+}
 
-  function frameStep(){
-    if(!state.isPlaying) return;
-    const c = state.clips[state.activeIdx];
-    if(!c){ finalizeRec(); return; }
-    const v = activeEl;
-    if(!v){ finalizeRec(); return; }
-    const offset = v.currentTime - c.in;
-    const f = clipFadeFactor(c, offset);
-    octx.fillStyle = '#000'; octx.fillRect(0,0,width,height);
-    const vw = v.videoWidth||width, vh = v.videoHeight||height;
-    const scale = Math.min(width/vw, height/vh) || 1;
-    const dw = vw*scale, dh = vh*scale;
-    try{ octx.drawImage(v, (width-dw)/2, (height-dh)/2, dw, dh); }catch(e){}
-    if(f<0.999){ octx.fillStyle = 'rgba(0,0,0,'+(1-f)+')'; octx.fillRect(0,0,width,height); }
-    if(videoTrack && videoTrack.requestFrame) videoTrack.requestFrame();
-    applyAudioLevel(f * ((c.volume==null?1:c.volume)));
-    lastProgress = performance.now();
+function attemptRecordingWithMime(mime, dur, width, height){
+  return new Promise(async function(resolve, reject){
+    const off = document.createElement('canvas');
+    off.width = width; off.height = height;
+    const octx = off.getContext('2d');
 
-    state.playhead = clipStart(state.activeIdx) + offset;
-    const pct = dur>0 ? Math.min(100, Math.round(state.playhead/dur*100)) : 100;
-    showExportOverlay(true, '녹화 중... ' + pct + '%', pct);
+    ensureAudioGraph();
+    const stream = off.captureStream ? off.captureStream(0) : off.captureStream();
+    const audioTrack = state.audio.dest.stream.getAudioTracks()[0];
+    if(audioTrack) stream.addTrack(audioTrack);
 
-    if(v.currentTime >= c.out - 0.04 || v.ended){
-      const nextIdx = state.activeIdx + 1;
-      if(nextIdx >= state.clips.length){ finalizeRec(); return; }
-      const next = state.clips[nextIdx];
-      state.activeIdx = nextIdx;
-      const continuous = next.sourceId === c.sourceId && Math.abs(next.in - c.out) < 0.06;
-      if(continuous){
-        requestAnimationFrame(frameStep);
-      } else {
-        const f0 = clipFadeFactor(next, 0);
-        seekSource(next.sourceId, next.in, function(){
-          if(activeEl) activeEl.play().catch(function(){});
-          requestAnimationFrame(frameStep);
-        }, f0);
+    const ext = mime.indexOf('video/mp4') === 0 ? 'mp4' : 'webm';
+    const filename = 'kvideo_export_' + Date.now() + '.' + ext;
+    updateExportNote(filename);
+
+    let rec;
+    try{
+      rec = new MediaRecorder(stream, { mimeType: mime, videoBitsPerSecond: 8000000 });
+    }catch(err){ reject(err); return; }
+
+    const chunks = [];
+    rec.ondataavailable = function(e){ if(e.data && e.data.size>0) chunks.push(e.data); };
+
+    let recorderErrored = false;
+    let duplicateStopGuard = false;
+    const finishPromise = new Promise(function(res, rej){
+      rec.onstop = function(){ res(); };
+      rec.onerror = function(e){
+        recorderErrored = true;
+        rej((e && e.error) || new Error('녹화 오류'));
+      };
+    });
+
+    pause();
+    state.playhead = 0;
+    const first = state.clips[0];
+    await new Promise(function(res){ seekSource(first.sourceId, first.in, res); });
+
+    const videoTrack = stream.getVideoTracks()[0];
+    try{ rec.start(200); }catch(err){ reject(err); return; }
+    let lastProgress = performance.now();
+    const watchdog = setInterval(function(){
+      if(performance.now() - lastProgress > 6000){
+        clearInterval(watchdog);
+        try{ if(!duplicateStopGuard){ duplicateStopGuard = true; rec.stop(); } }catch(e){}
       }
-      return;
+    }, 1000);
+
+    state.isPlaying = true;
+    state.activeIdx = 0;
+    ensureAudioGraph();
+    if(activeEl) activeEl.play().catch(function(){});
+    showExportOverlay(true, '녹화 중... 0%', 0);
+
+    let finished = false;
+    function finalizeRec(){
+      if(finished) return;
+      finished = true;
+      state.isPlaying = false;
+      clearInterval(watchdog);
+      try{ if(!duplicateStopGuard){ duplicateStopGuard = true; rec.stop(); } }catch(e){}
+    }
+
+    function frameStep(){
+      if(!state.isPlaying || recorderErrored) return;
+      const c = state.clips[state.activeIdx];
+      if(!c){ finalizeRec(); return; }
+      const v = activeEl;
+      if(!v){ finalizeRec(); return; }
+      const offset = v.currentTime - c.in;
+      const f = clipFadeFactor(c, offset);
+      octx.fillStyle = '#000'; octx.fillRect(0,0,width,height);
+      const vw = v.videoWidth||width, vh = v.videoHeight||height;
+      const scale = Math.min(width/vw, height/vh) || 1;
+      const dw = vw*scale, dh = vh*scale;
+      try{ octx.drawImage(v, (width-dw)/2, (height-dh)/2, dw, dh); }catch(e){}
+      if(f<0.999){ octx.fillStyle = 'rgba(0,0,0,'+(1-f)+')'; octx.fillRect(0,0,width,height); }
+      if(videoTrack && videoTrack.requestFrame) videoTrack.requestFrame();
+      applyAudioLevel(f * ((c.volume==null?1:c.volume)));
+      lastProgress = performance.now();
+
+      state.playhead = clipStart(state.activeIdx) + offset;
+      const pct = dur>0 ? Math.min(100, Math.round(state.playhead/dur*100)) : 100;
+      showExportOverlay(true, '녹화 중... ' + pct + '%', pct);
+
+      if(v.currentTime >= c.out - 0.04 || v.ended){
+        const nextIdx = state.activeIdx + 1;
+        if(nextIdx >= state.clips.length){ finalizeRec(); return; }
+        const next = state.clips[nextIdx];
+        state.activeIdx = nextIdx;
+        const continuous = next.sourceId === c.sourceId && Math.abs(next.in - c.out) < 0.06;
+        if(continuous){
+          requestAnimationFrame(frameStep);
+        } else {
+          const f0 = clipFadeFactor(next, 0);
+          seekSource(next.sourceId, next.in, function(){
+            if(activeEl) activeEl.play().catch(function(){});
+            requestAnimationFrame(frameStep);
+          }, f0);
+        }
+        return;
+      }
+      requestAnimationFrame(frameStep);
     }
     requestAnimationFrame(frameStep);
-  }
-  requestAnimationFrame(frameStep);
 
-  await finishPromise;
-  const blob = new Blob(chunks, { type: ext==='mp4' ? 'video/mp4' : 'video/webm' });
-  downloadBlob(blob, filename);
-  return filename;
+    try{
+      await finishPromise;
+    }catch(err){
+      reject(err);
+      return;
+    }
+    const blob = new Blob(chunks, { type: ext==='mp4' ? 'video/mp4' : 'video/webm' });
+    downloadBlob(blob, filename);
+    resolve(filename);
+  });
 }
 
 /* =========================================================
