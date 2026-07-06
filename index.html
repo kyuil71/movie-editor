@@ -3331,6 +3331,9 @@ const PPT_EXPORT_PRESETS = [
 ];
 const PPT_EXPORT_CODECS = ['avc1.64002A','avc1.4D402A','avc1.640028','avc1.4D4028','avc1.42E01F','avc1.42E01E'];
 let exportInProgress = false;
+const EXPORT_START_PRIME_SECONDS = 0.22;
+const EXPORT_STALL_RECOVERY_MS = 900;
+const EXPORT_SEEK_TIMEOUT_MS = 2600;
 
 async function startExport(){
   if(exportInProgress){ toast('이미 내보내기 중입니다. 완료될 때까지 기다려 주세요.','warn'); return; }
@@ -3423,19 +3426,48 @@ function drawSourceFrameToCanvas(ctx, v, w, h, fadeFactor){
 /* Seek once to a clip's start, then wait for a REAL decoded frame to be
    presented (via requestVideoFrameCallback) before capture begins — never
    used for per-frame scrubbing, only the single start-of-clip seek. */
-function seekAndAwaitFrame(v, time){
+function seekAndAwaitFrame(v, time, timeoutMs){
+  timeoutMs = timeoutMs || EXPORT_SEEK_TIMEOUT_MS;
   return new Promise(function(resolve){
     let settled = false;
-    function finish(){ if(settled) return; settled = true; resolve(); }
-    function afterSeeked(){
-      if(v.requestVideoFrameCallback){ v.requestVideoFrameCallback(function(){ finish(); }); }
-      else { setTimeout(finish, 50); }
+    const target = Math.min(Math.max(time,0), (v.duration||time)||time);
+    const tolerance = 0.045;
+    const startedAt = performance.now();
+    let frameCount = 0;
+    let timer = setTimeout(function(){ finish(); }, timeoutMs);
+    function finish(){
+      if(settled) return;
+      settled = true;
+      clearTimeout(timer);
+      v.removeEventListener('seeked', onSeeked);
+      v.removeEventListener('loadeddata', onLoadedData);
+      resolve();
     }
-    function onSeeked(){ v.removeEventListener('seeked', onSeeked); afterSeeked(); }
+    function goodEnough(mediaTime){
+      if(!isFinite(mediaTime)) mediaTime = v.currentTime || 0;
+      return frameCount >= 1 && (mediaTime >= target - tolerance || performance.now() - startedAt > Math.min(timeoutMs, 1200));
+    }
+    function awaitPresentedFrame(){
+      if(settled) return;
+      if(v.requestVideoFrameCallback){
+        v.requestVideoFrameCallback(function(now, metadata){
+          frameCount++;
+          const mt = metadata && metadata.mediaTime != null ? metadata.mediaTime : v.currentTime;
+          if(goodEnough(mt)) finish();
+          else awaitPresentedFrame();
+        });
+      } else {
+        setTimeout(function(){ frameCount++; finish(); }, 50);
+      }
+    }
+    function onSeeked(){ awaitPresentedFrame(); }
+    function onLoadedData(){ awaitPresentedFrame(); }
     v.addEventListener('seeked', onSeeked);
-    try{ v.currentTime = Math.min(Math.max(time,0), (v.duration||time)||time); }
-    catch(e){ finish(); }
-    setTimeout(finish, 1500);
+    v.addEventListener('loadeddata', onLoadedData);
+    try{
+      if(Math.abs((v.currentTime||0) - target) < 0.002 && v.readyState >= 2){ awaitPresentedFrame(); }
+      else { v.currentTime = target; }
+    }catch(e){ finish(); }
   });
 }
 
@@ -3467,7 +3499,7 @@ async function exportPrecise(){
   /* ---- 1) audio: offline render (PCM) first ---- */
   showExportOverlay(true, '오디오 처리 중...', 0);
   const sampleRate = 48000;
-  const offlineCtx = new OfflineAudioContext(2, Math.ceil((dur+1)*sampleRate), sampleRate);
+  const offlineCtx = new OfflineAudioContext(2, Math.max(1, Math.ceil(dur*sampleRate)), sampleRate);
   const decodedBuffers = {};
   const usedIds = getUsedSourceIds();
   for(const sid of usedIds){
@@ -3530,26 +3562,29 @@ async function exportPrecise(){
      at 1x, only real decoded frames are captured, and empty grid slots are
      filled by holding the last decoded frame so the MP4 never drops frames. ---- */
   showExportOverlay(true, 'PowerPoint용 영상 인코딩 중... 0%', 0);
-  const frameDurUs = Math.round(1e6/EXPORT_FPS);
   const totalFrames = Math.max(1, Math.round(dur*EXPORT_FPS));
   const progressStep = Math.max(1, Math.round(EXPORT_FPS/5));
+  const keyEveryFrames = Math.max(1, Math.round(EXPORT_FPS/2));
   let globalFrameIndex = 0;
 
   async function encodeGridSlotsUpTo(targetTime, vForBackpressure){
     while(globalFrameIndex < totalFrames && (globalFrameIndex/EXPORT_FPS) <= targetTime + 1e-6){
-      if(videoEncoder.encodeQueueSize > 12){
-        /* Encoder is falling behind: pause the source (don't drop frames,
-           don't let it race ahead) until the queue drains, then resume. */
+      if(videoEncoder.encodeQueueSize > 8){
+        /* Stability-first export: slow the source down when the encoder queue
+           grows. This adds a little export time, but avoids periodic freezes
+           caused by the decoder/encoder racing ahead of each other. */
         const wasPlaying = vForBackpressure && !vForBackpressure.paused;
         if(wasPlaying){ try{ vForBackpressure.pause(); }catch(e){} }
-        while(videoEncoder.encodeQueueSize > 4){
-          await new Promise(function(r){ setTimeout(r, 8); });
+        while(videoEncoder.encodeQueueSize > 2){
+          await new Promise(function(r){ setTimeout(r, 10); });
         }
         if(wasPlaying){ try{ await vForBackpressure.play(); }catch(e){} }
       }
-      const ts = Math.round(globalFrameIndex * frameDurUs);
-      const keyFrame = (globalFrameIndex % EXPORT_FPS) === 0; // every 1s
-      const frame = new VideoFrame(off, { timestamp: ts, duration: frameDurUs });
+      const ts = Math.round(globalFrameIndex * 1e6 / EXPORT_FPS);
+      const nextTs = Math.round((globalFrameIndex + 1) * 1e6 / EXPORT_FPS);
+      const durUs = Math.max(1, nextTs - ts);
+      const keyFrame = (globalFrameIndex % keyEveryFrames) === 0; // every 0.5s
+      const frame = new VideoFrame(off, { timestamp: ts, duration: durUs });
       videoEncoder.encode(frame, { keyFrame });
       frame.close();
       globalFrameIndex++;
@@ -3560,45 +3595,96 @@ async function exportPrecise(){
     }
   }
 
+  async function primeClipStartFrames(c, clipStartTimeline, v){
+    const cdurVal = clipDur(c);
+    const primeUntil = Math.min(cdurVal, EXPORT_START_PRIME_SECONDS);
+    while(globalFrameIndex < totalFrames){
+      const frameTime = globalFrameIndex / EXPORT_FPS;
+      if(frameTime > clipStartTimeline + primeUntil + 1e-6) break;
+      const offset = Math.max(0, Math.min(cdurVal, frameTime - clipStartTimeline));
+      await seekAndAwaitFrame(v, c.in + offset, EXPORT_SEEK_TIMEOUT_MS);
+      drawSourceFrameToCanvas(octx, v, width, height, clipFadeFactor(c, offset));
+      await encodeGridSlotsUpTo(frameTime, v);
+      if(offset >= cdurVal - 1e-6) break;
+    }
+  }
+
   function captureClipPlaythrough(c, clipStartTimeline, v){
     return new Promise(async function(resolve){
       const cdurVal = clipDur(c);
       const wasMuted = v.muted;
       v.muted = true; // ⚠ never let capture playback be audible
+      try{ v.preload = 'auto'; }catch(e){}
       try{ v.playbackRate = 1; }catch(e){} // ⚠ always 1x, never fast-forward
       setActiveSource(c.sourceId, 0);
 
       let finished = false;
-      let watchdogTimer = null;
-      function resetWatchdog(){
-        if(watchdogTimer) clearTimeout(watchdogTimer);
-        /* If this clip produces no new frame for 3.5s, finalize this clip
-           with the last decoded frame so the CFR MP4 never contains gaps. */
-        watchdogTimer = setTimeout(function(){ finish(); }, 3500);
-      }
+      let stallTimer = null;
+      let recovering = false;
+      let lastOffset = 0;
+      function clearStallTimer(){ if(stallTimer){ clearTimeout(stallTimer); stallTimer = null; } }
       function finish(){
         if(finished) return;
         finished = true;
-        if(watchdogTimer) clearTimeout(watchdogTimer);
+        clearStallTimer();
         try{ v.pause(); }catch(e){}
         v.muted = wasMuted;
         resolve();
       }
+      function scheduleStallRecovery(){
+        clearStallTimer();
+        stallTimer = setTimeout(function(){ recoverFromStall(); }, EXPORT_STALL_RECOVERY_MS);
+      }
+      async function recoverFromStall(){
+        if(finished || recovering) return;
+        recovering = true;
+        try{
+          try{ v.pause(); }catch(e){}
+          const nextTimeline = Math.min(clipStartTimeline + cdurVal, Math.max(clipStartTimeline + lastOffset, globalFrameIndex / EXPORT_FPS));
+          const nextOffset = Math.max(0, Math.min(cdurVal, nextTimeline - clipStartTimeline));
+          await seekAndAwaitFrame(v, c.in + nextOffset, EXPORT_SEEK_TIMEOUT_MS);
+          if(finished) return;
+          lastOffset = nextOffset;
+          drawSourceFrameToCanvas(octx, v, width, height, clipFadeFactor(c, nextOffset));
+          await encodeGridSlotsUpTo(clipStartTimeline + nextOffset, v);
+          if(nextOffset >= cdurVal - 0.0008){
+            await encodeGridSlotsUpTo(clipStartTimeline + cdurVal, v);
+            finish();
+            return;
+          }
+          try{ await v.play(); }catch(e){}
+          scheduleStallRecovery();
+          if(v.requestVideoFrameCallback) v.requestVideoFrameCallback(onFrame);
+        } finally {
+          recovering = false;
+        }
+      }
 
-      await seekAndAwaitFrame(v, c.in); // the ONLY seek for this clip
+      await seekAndAwaitFrame(v, c.in, EXPORT_SEEK_TIMEOUT_MS);
       if(finished) return;
-      drawSourceFrameToCanvas(octx, v, width, height, clipFadeFactor(c, 0));
-      await encodeGridSlotsUpTo(clipStartTimeline, v);
+      await primeClipStartFrames(c, clipStartTimeline, v);
       if(finished) return;
+      lastOffset = Math.max(lastOffset, Math.max(0, Math.min(cdurVal, (globalFrameIndex / EXPORT_FPS) - clipStartTimeline)));
+      if((globalFrameIndex / EXPORT_FPS) >= clipStartTimeline + cdurVal - 1e-6){
+        await encodeGridSlotsUpTo(clipStartTimeline + cdurVal, v);
+        finish();
+        return;
+      }
 
-      resetWatchdog();
+      scheduleStallRecovery();
 
       function onFrame(now, metadata){
-        if(finished) return;
-        resetWatchdog();
+        if(finished || recovering) return;
+        clearStallTimer();
         const mediaTime = (metadata && metadata.mediaTime != null) ? metadata.mediaTime : v.currentTime;
         let offset = mediaTime - c.in;
         offset = Math.max(0, Math.min(cdurVal, offset));
+        if(offset < lastOffset - 0.020){
+          scheduleStallRecovery();
+          if(v.requestVideoFrameCallback) v.requestVideoFrameCallback(onFrame);
+          return;
+        }
+        lastOffset = Math.max(lastOffset, offset);
         const f = clipFadeFactor(c, offset);
         drawSourceFrameToCanvas(octx, v, width, height, f);
         const targetTimelineTime = clipStartTimeline + offset;
@@ -3611,12 +3697,14 @@ async function exportPrecise(){
             encodeGridSlotsUpTo(clipStartTimeline + cdurVal, v).then(finish);
             return;
           }
+          scheduleStallRecovery();
           if(v.requestVideoFrameCallback) v.requestVideoFrameCallback(onFrame);
           else setTimeout(function(){ onFrame(performance.now(), { mediaTime: v.currentTime }); }, 1000/EXPORT_FPS);
         });
       }
+      try{ await v.play(); }catch(e){ await recoverFromStall(); return; }
       if(v.requestVideoFrameCallback) v.requestVideoFrameCallback(onFrame);
-      try{ await v.play(); }catch(e){ finish(); }
+      else setTimeout(function(){ onFrame(performance.now(), { mediaTime: v.currentTime }); }, 1000/EXPORT_FPS);
     });
   }
 
