@@ -3317,52 +3317,58 @@ function showExportOverlay(show, label, pct){
 }
 function updateExportNote(filename){
   if(filename){
-    exportNote.innerHTML = '완료되면 브라우저의 <b>기본 다운로드 폴더</b>에 <b>' + escapeHtml(filename) + '</b> 파일로 자동 저장됩니다.';
+    exportNote.innerHTML = 'PowerPoint 삽입에 최적화된 <b>H.264/AAC MP4</b>로 렌더링합니다.<br>완료되면 브라우저의 <b>기본 다운로드 폴더</b>에 <b>' + escapeHtml(filename) + '</b> 파일로 자동 저장됩니다.';
   } else {
-    exportNote.innerHTML = '완료되면 브라우저의 <b>기본 다운로드 폴더</b>에 파일이 자동으로 저장됩니다.';
+    exportNote.innerHTML = 'PowerPoint 삽입에 최적화된 <b>H.264/AAC MP4</b>로 렌더링합니다.<br>내보내기 중에는 브라우저 창을 닫거나 백그라운드로 보내지 마세요.';
   }
 }
 
+const PPT_EXPORT_PRESETS = [
+  { width:1920, height:1080, fps:60, bitrate:16000000, label:'1080p_60fps' },
+  { width:1280, height:720,  fps:60, bitrate:10000000, label:'720p_60fps'  },
+  { width:1920, height:1080, fps:30, bitrate:10000000, label:'1080p_30fps' },
+  { width:1280, height:720,  fps:30, bitrate:6000000,  label:'720p_30fps'  }
+];
+const PPT_EXPORT_CODECS = ['avc1.64002A','avc1.4D402A','avc1.640028','avc1.4D4028','avc1.42E01F','avc1.42E01E'];
+let exportInProgress = false;
+
 async function startExport(){
+  if(exportInProgress){ toast('이미 내보내기 중입니다. 완료될 때까지 기다려 주세요.','warn'); return; }
   if(state.clips.length===0){ toast('내보낼 클립이 없습니다.','warn'); return; }
   if(state.isPlaying) pause();
+  exportInProgress = true;
   updateExportNote(null);
-  showExportOverlay(true, '준비 중...', 0);
+  showExportOverlay(true, 'PowerPoint용 MP4 준비 중...', 0);
   let savedFilename = null;
   try{
-    if(await supportsWebCodecs()){
-      savedFilename = await exportPrecise();
-    } else {
-      toast('이 브라우저는 정밀 인코딩(H.264+AAC)을 지원하지 않아 녹화 방식으로 내보냅니다.','warn');
-      savedFilename = await exportRecording();
+    if(!(await supportsWebCodecs())){
+      throw new Error('이 브라우저는 PowerPoint 호환 H.264/AAC MP4 렌더링을 지원하지 않습니다. Windows Chrome 또는 Edge 최신 버전에서 실행해 주세요.');
     }
+    savedFilename = await exportPrecise();
     toast((savedFilename||'파일')+' 이 다운로드 폴더에 저장되었습니다.', 'info');
   } catch(err){
     console.error(err);
     toast('내보내기 중 오류가 발생했습니다: ' + (err && err.message ? err.message : err), 'error');
   } finally {
+    exportInProgress = false;
     showExportOverlay(false);
     seekPreview(state.playhead);
   }
 }
+function isChromeOrEdge(){
+  const ua = navigator.userAgent || '';
+  const isEdge = /Edg\//.test(ua);
+  const isChrome = /Chrome\//.test(ua) && !/OPR\//.test(ua) && !/Edg\//.test(ua);
+  return isChrome || isEdge;
+}
 async function supportsWebCodecs(){
+  if(!isChromeOrEdge()) return false;
   if(typeof window.VideoEncoder === 'undefined' ||
      typeof window.AudioEncoder === 'undefined' ||
      typeof window.VideoFrame === 'undefined' ||
      !window.Mp4Muxer) return false;
-  /* ⚠ The APIs existing isn't enough — some Chromium builds expose
-     VideoEncoder/AudioEncoder but lack an actual AAC encoder (licensing),
-     which would only fail later, mid-export, with a confusing error.
-     Verify H.264 AND AAC are both genuinely encodable up front, and fall
-     back to the recording path otherwise so export never crashes. */
   try{
-    const codecs = ['avc1.640028','avc1.4D4028','avc1.42E01E'];
-    let videoOk = false;
-    for(const codec of codecs){
-      const s = await VideoEncoder.isConfigSupported({ codec, width:1280, height:720, bitrate:8000000, framerate:60 });
-      if(s && s.supported){ videoOk = true; break; }
-    }
-    if(!videoOk) return false;
+    await choosePptExportConfig();
     const aSupport = await AudioEncoder.isConfigSupported({ codec:'mp4a.40.2', sampleRate:48000, numberOfChannels:2, bitrate:192000 });
     if(!aSupport || !aSupport.supported) return false;
   }catch(e){ return false; }
@@ -3375,11 +3381,32 @@ function getUsedSourceIds(){
   return Object.keys(set);
 }
 function computeResolution(){
-  /* Fixed output: 1280x720 @ ~8Mbps. Sources of any aspect ratio are
-     letterboxed to fit within this 16:9 frame (handled in
-     drawSourceFrameToCanvas). This keeps encoding fast and predictable
-     regardless of source resolution. */
-  return { width:1280, height:720, bitrate:8000000 };
+  /* PowerPoint-first output: 16:9 H.264 MP4. 60fps is prioritized so motion
+     remains smooth; if the local Chrome/Edge encoder cannot support it,
+     choosePptExportConfig() automatically falls back to another MP4-only
+     preset without ever using WebM or live screen recording. */
+  const p = PPT_EXPORT_PRESETS[0];
+  return { width:p.width, height:p.height, bitrate:p.bitrate, fps:p.fps, label:p.label };
+}
+async function choosePptExportConfig(){
+  for(const preset of PPT_EXPORT_PRESETS){
+    for(const codec of PPT_EXPORT_CODECS){
+      try{
+        const support = await VideoEncoder.isConfigSupported({
+          codec: codec,
+          width: preset.width,
+          height: preset.height,
+          bitrate: preset.bitrate,
+          framerate: preset.fps,
+          latencyMode: 'quality'
+        });
+        if(support && support.supported){
+          return { width:preset.width, height:preset.height, bitrate:preset.bitrate, fps:preset.fps, label:preset.label, codec:codec };
+        }
+      }catch(e){}
+    }
+  }
+  throw new Error('지원되는 PowerPoint용 H.264 MP4 인코딩 설정이 없습니다.');
 }
 function drawSourceFrameToCanvas(ctx, v, w, h, fadeFactor){
   ctx.fillStyle = '#000';
@@ -3423,25 +3450,19 @@ function downloadBlob(blob, filename){
 }
 
 async function exportPrecise(){
-  const EXPORT_FPS = 60;
   const dur = totalDuration();
-  const { width, height, bitrate } = computeResolution();
-  const filename = 'kvideo_export_' + Date.now() + '.mp4';
+  const exportConfig = await choosePptExportConfig();
+  const EXPORT_FPS = exportConfig.fps;
+  const width = exportConfig.width;
+  const height = exportConfig.height;
+  const bitrate = exportConfig.bitrate;
+  const chosenCodec = exportConfig.codec;
+  const filename = 'K_VIDEO_EDITOR_PPT_' + exportConfig.label + '_' + Date.now() + '.mp4';
   updateExportNote(filename);
 
   const off = document.createElement('canvas');
   off.width = width; off.height = height;
   const octx = off.getContext('2d');
-
-  const codecCandidates = ['avc1.640028','avc1.4D4028','avc1.42E01E'];
-  let chosenCodec = null;
-  for(const codec of codecCandidates){
-    try{
-      const support = await VideoEncoder.isConfigSupported({ codec, width, height, bitrate, framerate:EXPORT_FPS });
-      if(support && support.supported){ chosenCodec = codec; break; }
-    }catch(e){}
-  }
-  if(!chosenCodec) throw new Error('지원되는 비디오 코덱이 없습니다.');
 
   /* ---- 1) audio: offline render (PCM) first ---- */
   showExportOverlay(true, '오디오 처리 중...', 0);
@@ -3505,12 +3526,13 @@ async function exportPrecise(){
   });
   videoEncoder.configure({ codec: chosenCodec, width, height, bitrate, framerate: EXPORT_FPS, latencyMode: 'quality' });
 
-  /* ---- 3) video: play each clip at 1x, capture only frames the decoder
-     actually displays (requestVideoFrameCallback), and fill a fixed 60fps
-     grid by holding the last captured frame — never seek per frame. ---- */
-  showExportOverlay(true, '영상 인코딩 중... 0%', 0);
+  /* ---- 3) video: encode a fixed CFR grid for PowerPoint. Each clip plays
+     at 1x, only real decoded frames are captured, and empty grid slots are
+     filled by holding the last decoded frame so the MP4 never drops frames. ---- */
+  showExportOverlay(true, 'PowerPoint용 영상 인코딩 중... 0%', 0);
   const frameDurUs = Math.round(1e6/EXPORT_FPS);
   const totalFrames = Math.max(1, Math.round(dur*EXPORT_FPS));
+  const progressStep = Math.max(1, Math.round(EXPORT_FPS/5));
   let globalFrameIndex = 0;
 
   async function encodeGridSlotsUpTo(targetTime, vForBackpressure){
@@ -3526,14 +3548,14 @@ async function exportPrecise(){
         if(wasPlaying){ try{ await vForBackpressure.play(); }catch(e){} }
       }
       const ts = Math.round(globalFrameIndex * frameDurUs);
-      const keyFrame = (globalFrameIndex % EXPORT_FPS) === 0; // every 1s at 60fps
+      const keyFrame = (globalFrameIndex % EXPORT_FPS) === 0; // every 1s
       const frame = new VideoFrame(off, { timestamp: ts, duration: frameDurUs });
       videoEncoder.encode(frame, { keyFrame });
       frame.close();
       globalFrameIndex++;
-      if(globalFrameIndex % 12 === 0){
+      if(globalFrameIndex % progressStep === 0){
         const pct = Math.round(globalFrameIndex/totalFrames*100);
-        showExportOverlay(true, '영상 인코딩 중... ' + pct + '%', pct);
+        showExportOverlay(true, 'PowerPoint용 영상 인코딩 중... ' + pct + '%', pct);
       }
     }
   }
@@ -3550,8 +3572,8 @@ async function exportPrecise(){
       let watchdogTimer = null;
       function resetWatchdog(){
         if(watchdogTimer) clearTimeout(watchdogTimer);
-        /* If this clip produces no new frame for 3.5s, bail out on just
-           this clip so the whole export never hangs. */
+        /* If this clip produces no new frame for 3.5s, finalize this clip
+           with the last decoded frame so the CFR MP4 never contains gaps. */
         watchdogTimer = setTimeout(function(){ finish(); }, 3500);
       }
       function finish(){
@@ -3590,7 +3612,7 @@ async function exportPrecise(){
             return;
           }
           if(v.requestVideoFrameCallback) v.requestVideoFrameCallback(onFrame);
-          else setTimeout(function(){ onFrame(performance.now(), { mediaTime: v.currentTime }); }, 1000/60);
+          else setTimeout(function(){ onFrame(performance.now(), { mediaTime: v.currentTime }); }, 1000/EXPORT_FPS);
         });
       }
       if(v.requestVideoFrameCallback) v.requestVideoFrameCallback(onFrame);
@@ -3615,7 +3637,7 @@ async function exportPrecise(){
 
   /* ---- 4) audio: encode the already-rendered PCM to AAC ---- */
   if(hasAnyAudio && rendered){
-    showExportOverlay(true, '오디오 인코딩 중...', 100);
+    showExportOverlay(true, 'AAC 오디오 인코딩 중...', 100);
     const audioEncoder = new AudioEncoder({
       output: function(chunk, meta){ muxer.addAudioChunk(chunk, meta); },
       error: function(e){ throw e; }
@@ -3643,7 +3665,7 @@ async function exportPrecise(){
   }
 
   /* ---- 5) finalize ---- */
-  showExportOverlay(true, '마무리 중...', 100);
+  showExportOverlay(true, 'PowerPoint용 MP4 마무리 중...', 100);
   muxer.finalize();
   const buffer = muxer.target.buffer;
   const blob = new Blob([buffer], { type:'video/mp4' });
@@ -3652,151 +3674,11 @@ async function exportPrecise(){
 }
 
 async function exportRecording(){
-  const dur = totalDuration();
-  const { width, height } = computeResolution();
-
-  const mimeCandidates = [
-    'video/mp4;codecs=avc1.640028,mp4a.40.2',
-    'video/mp4;codecs=h264,aac',
-    'video/webm;codecs=vp9,opus',
-    'video/webm;codecs=vp8,opus',
-    'video/webm'
-  ];
-  const supportedMimes = mimeCandidates.filter(function(m){
-    return window.MediaRecorder && MediaRecorder.isTypeSupported && MediaRecorder.isTypeSupported(m);
-  });
-  if(supportedMimes.length===0) throw new Error('지원되는 녹화 형식이 없습니다.');
-
-  let lastError = null;
-  for(const mime of supportedMimes){
-    try{
-      return await attemptRecordingWithMime(mime, dur, width, height);
-    }catch(err){
-      console.warn('recording attempt failed for', mime, err);
-      lastError = err;
-      try{ pause(); }catch(e){}
-      toast(mime + ' 형식으로 녹화 중 오류가 발생해 다른 형식으로 재시도합니다.', 'warn');
-    }
-  }
-  throw lastError || new Error('녹화에 실패했습니다.');
+  throw new Error('PowerPoint용 내보내기에서는 녹화 방식과 WebM 저장을 사용하지 않습니다.');
 }
 
-function attemptRecordingWithMime(mime, dur, width, height){
-  return new Promise(async function(resolve, reject){
-    const off = document.createElement('canvas');
-    off.width = width; off.height = height;
-    const octx = off.getContext('2d');
-
-    ensureAudioGraph();
-    const stream = off.captureStream ? off.captureStream(0) : off.captureStream();
-    const audioTrack = state.audio.dest.stream.getAudioTracks()[0];
-    if(audioTrack) stream.addTrack(audioTrack);
-
-    const ext = mime.indexOf('video/mp4') === 0 ? 'mp4' : 'webm';
-    const filename = 'kvideo_export_' + Date.now() + '.' + ext;
-    updateExportNote(filename);
-
-    let rec;
-    try{
-      rec = new MediaRecorder(stream, { mimeType: mime, videoBitsPerSecond: 8000000 });
-    }catch(err){ reject(err); return; }
-
-    const chunks = [];
-    rec.ondataavailable = function(e){ if(e.data && e.data.size>0) chunks.push(e.data); };
-
-    let recorderErrored = false;
-    let duplicateStopGuard = false;
-    const finishPromise = new Promise(function(res, rej){
-      rec.onstop = function(){ res(); };
-      rec.onerror = function(e){
-        recorderErrored = true;
-        rej((e && e.error) || new Error('녹화 오류'));
-      };
-    });
-
-    pause();
-    state.playhead = 0;
-    const first = state.clips[0];
-    await new Promise(function(res){ seekSource(first.sourceId, first.in, res); });
-
-    const videoTrack = stream.getVideoTracks()[0];
-    try{ rec.start(200); }catch(err){ reject(err); return; }
-    let lastProgress = performance.now();
-    const watchdog = setInterval(function(){
-      if(performance.now() - lastProgress > 6000){
-        clearInterval(watchdog);
-        try{ if(!duplicateStopGuard){ duplicateStopGuard = true; rec.stop(); } }catch(e){}
-      }
-    }, 1000);
-
-    state.isPlaying = true;
-    state.activeIdx = 0;
-    ensureAudioGraph();
-    if(activeEl) activeEl.play().catch(function(){});
-    showExportOverlay(true, '녹화 중... 0%', 0);
-
-    let finished = false;
-    function finalizeRec(){
-      if(finished) return;
-      finished = true;
-      state.isPlaying = false;
-      clearInterval(watchdog);
-      try{ if(!duplicateStopGuard){ duplicateStopGuard = true; rec.stop(); } }catch(e){}
-    }
-
-    function frameStep(){
-      if(!state.isPlaying || recorderErrored) return;
-      const c = state.clips[state.activeIdx];
-      if(!c){ finalizeRec(); return; }
-      const v = activeEl;
-      if(!v){ finalizeRec(); return; }
-      const offset = v.currentTime - c.in;
-      const f = clipFadeFactor(c, offset);
-      octx.fillStyle = '#000'; octx.fillRect(0,0,width,height);
-      const vw = v.videoWidth||width, vh = v.videoHeight||height;
-      const scale = Math.min(width/vw, height/vh) || 1;
-      const dw = vw*scale, dh = vh*scale;
-      try{ octx.drawImage(v, (width-dw)/2, (height-dh)/2, dw, dh); }catch(e){}
-      if(f<0.999){ octx.fillStyle = 'rgba(0,0,0,'+(1-f)+')'; octx.fillRect(0,0,width,height); }
-      if(videoTrack && videoTrack.requestFrame) videoTrack.requestFrame();
-      applyAudioLevel(f * ((c.volume==null?1:c.volume)));
-      lastProgress = performance.now();
-
-      state.playhead = clipStart(state.activeIdx) + offset;
-      const pct = dur>0 ? Math.min(100, Math.round(state.playhead/dur*100)) : 100;
-      showExportOverlay(true, '녹화 중... ' + pct + '%', pct);
-
-      if(v.currentTime >= c.out - 0.04 || v.ended){
-        const nextIdx = state.activeIdx + 1;
-        if(nextIdx >= state.clips.length){ finalizeRec(); return; }
-        const next = state.clips[nextIdx];
-        state.activeIdx = nextIdx;
-        const continuous = next.sourceId === c.sourceId && Math.abs(next.in - c.out) < 0.06;
-        if(continuous){
-          requestAnimationFrame(frameStep);
-        } else {
-          const f0 = clipFadeFactor(next, 0);
-          seekSource(next.sourceId, next.in, function(){
-            if(activeEl) activeEl.play().catch(function(){});
-            requestAnimationFrame(frameStep);
-          }, f0);
-        }
-        return;
-      }
-      requestAnimationFrame(frameStep);
-    }
-    requestAnimationFrame(frameStep);
-
-    try{
-      await finishPromise;
-    }catch(err){
-      reject(err);
-      return;
-    }
-    const blob = new Blob(chunks, { type: ext==='mp4' ? 'video/mp4' : 'video/webm' });
-    downloadBlob(blob, filename);
-    resolve(filename);
-  });
+function attemptRecordingWithMime(){
+  throw new Error('PowerPoint용 내보내기에서는 녹화 방식과 WebM 저장을 사용하지 않습니다.');
 }
 
 /* =========================================================
