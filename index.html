@@ -36,8 +36,7 @@ button{font-family:inherit;}
   box-shadow:0 0 0 1px rgba(255,255,255,0.08) inset;}
 .brand-text{display:flex;align-items:baseline;gap:6px;line-height:1;}
 .brand-main{font-weight:700;font-size:14px;letter-spacing:0.5px;}
-.brand-sub{font-size:10.5px;color:var(--muted);letter-spacing:1.5px;font-weight:600;}
-.topbar-actions{display:flex;gap:8px;}
+.topbar-actions{display:flex;gap:8px;align-items:center;}
 .btn{
   display:flex;align-items:center;gap:6px;background:var(--panel2);color:var(--text);
   border:1px solid var(--border);border-radius:7px;padding:7px 12px;font-size:12.5px;
@@ -48,15 +47,15 @@ button{font-family:inherit;}
 .btn svg{width:14px;height:14px;flex:none;}
 .btn-accent{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:600;}
 .btn-accent:hover{background:#6c4ce8;}
-.btn-icon{padding:7px 9px;}
 .btn:disabled{opacity:.4;cursor:not-allowed;}
+.topdiv{width:1px;height:24px;background:var(--border);margin:0 3px;}
 
 /* ---------- stage ---------- */
 .stage-wrap{flex:1;display:flex;min-height:0;border-bottom:1px solid var(--border);}
-.media-bin{width:230px;min-width:230px;background:var(--panel);border-right:1px solid var(--border);
+.media-bin{width:240px;min-width:240px;background:var(--panel);border-right:1px solid var(--border);
   display:flex;flex-direction:column;min-height:0;}
 .bin-header{padding:10px 12px;font-size:11px;color:var(--muted);letter-spacing:1px;
-  text-transform:uppercase;border-bottom:1px solid var(--border);}
+  text-transform:uppercase;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;}
 .bin-list{flex:1;overflow-y:auto;padding:6px;}
 .bin-item{display:flex;gap:8px;padding:6px 22px 6px 6px;border-radius:8px;cursor:pointer;align-items:center;position:relative;}
 .bin-item:hover{background:var(--panel2);}
@@ -68,11 +67,17 @@ button{font-family:inherit;}
 .bin-remove:hover{background:var(--danger);border-color:var(--danger);color:#fff;}
 .bin-remove svg{width:10px;height:10px;pointer-events:none;}
 .bin-thumb{width:52px;height:32px;border-radius:5px;background-size:cover;background-position:center;
-  background-color:#111;flex:none;position:relative;overflow:hidden;}
+  background-color:#111;flex:none;position:relative;overflow:hidden;display:flex;align-items:center;justify-content:center;}
+.bin-thumb.audio{background:#191b23;color:var(--accent2);}
+.bin-thumb.image{background-size:cover;}
+.bin-thumb.audio svg{width:18px;height:18px;}
 .bin-swatch{position:absolute;left:0;top:0;bottom:0;width:4px;}
 .bin-meta{min-width:0;flex:1;}
 .bin-name{font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-.bin-dur{font-size:10.5px;color:var(--muted);font-family:var(--mono);margin-top:2px;}
+.bin-dur{font-size:10.5px;color:var(--muted);font-family:var(--mono);margin-top:2px;
+  display:flex;align-items:center;gap:5px;}
+.bin-kind{font-size:9px;letter-spacing:.5px;border:1px solid var(--border);border-radius:4px;
+  padding:0 4px;color:var(--muted);font-family:inherit;}
 .bin-empty{padding:20px 12px;font-size:11.5px;color:var(--muted);text-align:center;line-height:1.6;}
 
 .program-monitor{flex:1;display:flex;flex-direction:column;min-width:0;background:#0c0d10;}
@@ -80,13 +85,12 @@ button{font-family:inherit;}
   overflow:hidden;box-shadow:0 0 0 1px var(--border);display:flex;align-items:center;justify-content:center;}
 .screen video{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;opacity:0;z-index:1;
   transition:none;background:#000;}
-.screen video.active{}
 #screenCanvas{position:absolute;inset:0;width:100%;height:100%;z-index:2;pointer-events:none;}
 .placeholder{position:absolute;inset:0;z-index:3;display:flex;flex-direction:column;align-items:center;
   justify-content:center;gap:8px;color:var(--muted);font-size:13px;text-align:center;pointer-events:none;}
 .placeholder svg{width:44px;height:44px;opacity:.5;margin-bottom:4px;}
 .placeholder-title{font-size:15px;font-weight:700;color:var(--text);letter-spacing:.3px;}
-.placeholder-desc{font-size:12px;color:var(--muted);max-width:260px;line-height:1.5;}
+.placeholder-desc{font-size:12px;color:var(--muted);max-width:280px;line-height:1.5;}
 .transport{display:flex;align-items:center;justify-content:center;gap:10px;padding:6px 14px 14px 14px;}
 .transport-btn{width:34px;height:34px;border-radius:8px;background:var(--panel2);border:1px solid var(--border);
   display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--text);}
@@ -99,21 +103,16 @@ button{font-family:inherit;}
 .timecode .sep{color:var(--muted);margin:0 4px;}
 
 /* ---------- timeline panel ---------- */
-.timeline-panel{min-height:180px;height:230px;background:var(--panel);display:flex;flex-direction:column;}
+.timeline-panel{min-height:290px;height:346px;background:var(--panel);display:flex;flex-direction:column;}
 .tl-toolbar{height:44px;min-height:44px;display:flex;align-items:center;gap:6px;padding:0 10px;
   border-bottom:1px solid var(--border);overflow-x:auto;overflow-y:hidden;white-space:nowrap;}
 .tl-toolbar::-webkit-scrollbar{height:5px;}
 .tl-toolbar::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px;}
-.tbtn{width:30px;height:30px;border-radius:6px;background:transparent;border:1px solid transparent;
-  display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--text);flex:none;}
-.tbtn:hover{background:var(--panel2);border-color:var(--border);}
-.tbtn svg{width:15px;height:15px;}
 .ebtn{height:30px;border-radius:6px;background:var(--panel2);border:1px solid var(--border);
   display:flex;align-items:center;justify-content:center;gap:6px;cursor:pointer;color:var(--text);
   flex:none;padding:0 10px;font-size:12px;white-space:nowrap;}
 .ebtn:hover{background:#2a2d38;border-color:#3a3f4e;}
 .ebtn svg{width:14px;height:14px;flex:none;}
-.ebtn span{white-space:nowrap;}
 .ebtn-text{height:30px;border-radius:6px;background:var(--panel2);border:1px solid var(--border);
   display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--text);
   flex:none;padding:0 12px;font-size:12px;white-space:nowrap;font-family:inherit;}
@@ -122,7 +121,6 @@ button{font-family:inherit;}
 .vol-input{width:52px;height:26px;background:var(--panel2);border:1px solid var(--border);color:var(--text);
   border-radius:6px;font-family:var(--mono);font-size:12px;text-align:center;padding:0 2px;}
 .vol-input:focus{outline:none;border-color:var(--accent);}
-.vol-input::-webkit-inner-spin-button,.vol-input::-webkit-outer-spin-button{opacity:0.6;}
 .tdiv{width:1px;height:22px;background:var(--border);margin:0 6px;flex:none;}
 .tgroup{display:flex;align-items:center;gap:6px;flex:none;}
 .tsel{background:var(--panel2);border:1px solid var(--border);color:var(--text);border-radius:6px;
@@ -130,50 +128,73 @@ button{font-family:inherit;}
 .tlabel{font-size:11.5px;color:var(--muted);white-space:nowrap;}
 .tl-toolbar-spacer{flex:1;}
 .vol-slider,.zoom-slider{width:100px;accent-color:var(--accent);}
-.vol-pct,.clip-count{font-family:var(--mono);font-size:11.5px;color:var(--muted);min-width:40px;text-align:right;}
+.vol-pct,.clip-count{font-family:var(--mono);font-size:11.5px;color:var(--muted);text-align:right;}
+.vol-target{font-family:var(--mono);font-size:11px;color:var(--accent2);max-width:130px;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.vol-target.none{color:#6b7080;}
+.vol-slider:disabled,.vol-input:disabled{opacity:.35;cursor:not-allowed;}
+.ebtn-text:disabled{opacity:.35;cursor:not-allowed;}
+.sel-label{font-size:11.5px;color:var(--accent2);font-family:var(--mono);max-width:150px;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
 
 .tl-scroll{flex:1;overflow:auto;position:relative;background:#181a22;}
 .tl-scroll::-webkit-scrollbar{height:10px;width:10px;}
 .tl-scroll::-webkit-scrollbar-thumb{background:#333747;border-radius:5px;}
 .tl-scroll::-webkit-scrollbar-track{background:#14151a;}
 .tl-content{position:relative;}
-.tl-ruler-row,.tl-track-row{display:flex;}
-.tl-label{position:sticky;left:0;z-index:5;width:42px;min-width:42px;background:#1f2129;
-  border-right:1px solid var(--border);display:flex;align-items:center;justify-content:center;
-  font-size:11px;color:var(--muted);font-weight:600;}
+.tl-row{display:flex;}
+.tl-label{position:sticky;left:0;z-index:6;width:46px;min-width:46px;background:#1f2129;
+  border-right:1px solid var(--border);border-bottom:1px solid var(--border);
+  display:flex;align-items:center;justify-content:center;
+  font-size:11px;color:var(--muted);font-weight:600;letter-spacing:.5px;}
+.tl-label.v{color:#a68cff;}
+.tl-label.a{color:var(--accent2);}
 .tl-ruler{height:26px;position:relative;background:#1a1c24;border-bottom:1px solid var(--border);}
 .tick{position:absolute;top:0;bottom:0;display:flex;flex-direction:column;align-items:flex-start;}
 .tick-line{width:1px;height:7px;background:#454b5c;display:block;}
 .tick-label{font-size:9.5px;color:var(--muted);margin-left:3px;font-family:var(--mono);white-space:nowrap;
   transform:translateY(-2px);}
-.tl-track{height:88px;position:relative;background:#181a22;}
+.tl-track{height:82px;position:relative;background:#181a22;border-bottom:1px solid var(--border);}
+.tl-track.audio{height:64px;background:#161821;}
 .grid-line{position:absolute;top:0;bottom:0;width:1px;background:rgba(255,255,255,0.055);z-index:0;pointer-events:none;}
 .grid-line.major{background:rgba(255,255,255,0.1);}
-.track-empty{position:absolute;left:42px;right:0;top:26px;height:88px;display:flex;
-  align-items:center;justify-content:center;color:var(--muted);font-size:12.5px;text-align:center;
-  pointer-events:none;z-index:4;padding:0 20px;line-height:1.5;}
-.track-empty.hidden{display:none;}
-.clip{position:absolute;top:8px;height:72px;border-radius:6px;overflow:hidden;cursor:grab;
-  display:flex;align-items:center;gap:6px;padding:0 6px;border:2px solid transparent;
+.track-hint{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+  color:#5d6274;font-size:12px;pointer-events:none;z-index:1;padding:0 20px;text-align:center;}
+.track-hint.hidden{display:none;}
+
+.clip{position:absolute;border-radius:6px;overflow:hidden;cursor:grab;
+  display:flex;align-items:center;gap:6px;padding:0 8px;border:2px solid transparent;
   box-shadow:0 1px 3px rgba(0,0,0,.4);}
+.clip.v{top:6px;height:70px;}
+.clip.a{top:6px;height:52px;}
 .clip.selected{border-color:var(--amber);}
 .clip.dragging{opacity:.85;cursor:grabbing;z-index:20;box-shadow:0 6px 16px rgba(0,0,0,.5);}
 .clip-thumb{width:34px;height:34px;border-radius:4px;background-size:cover;background-position:center;
-  background-color:rgba(0,0,0,.3);flex:none;pointer-events:none;}
-.clip-info{min-width:0;flex:1;pointer-events:none;}
+  background-color:rgba(0,0,0,.3);flex:none;pointer-events:none;z-index:2;}
+.clip-info{min-width:0;flex:1;pointer-events:none;z-index:2;}
 .clip-name{font-size:11px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
-  color:#fff;text-shadow:0 1px 2px rgba(0,0,0,.5);}
-.clip-dur{font-size:10px;font-family:var(--mono);color:rgba(255,255,255,.75);margin-top:2px;}
-.fade{position:absolute;top:0;bottom:0;pointer-events:none;z-index:2;}
+  color:#fff;text-shadow:0 1px 2px rgba(0,0,0,.6);}
+.clip-dur{font-size:10px;font-family:var(--mono);color:rgba(255,255,255,.78);margin-top:2px;
+  text-shadow:0 1px 2px rgba(0,0,0,.6);}
+.wave-canvas{position:absolute;inset:0;width:100%;height:100%;z-index:1;pointer-events:none;opacity:.55;}
+.fade{position:absolute;top:0;bottom:0;pointer-events:none;z-index:3;}
 .fade-in{left:0;background:linear-gradient(to right, rgba(0,0,0,.8), rgba(0,0,0,0));}
 .fade-out{right:0;background:linear-gradient(to left, rgba(0,0,0,.8), rgba(0,0,0,0));}
-.clip-vol-badge{position:absolute;bottom:3px;right:5px;font-size:9.5px;font-family:var(--mono);
-  background:rgba(0,0,0,.55);border-radius:4px;padding:1px 5px;display:flex;align-items:center;gap:3px;
-  color:#fff;z-index:3;pointer-events:none;}
-.clip-vol-badge svg{width:9px;height:9px;}
-.insert-marker{position:absolute;top:0;bottom:0;width:2px;background:var(--accent2);z-index:15;
+.clip-badges{position:absolute;bottom:3px;right:5px;display:flex;gap:4px;z-index:4;pointer-events:none;}
+.badge{font-size:9.5px;font-family:var(--mono);background:rgba(0,0,0,.6);border-radius:4px;
+  padding:1px 5px;display:flex;align-items:center;gap:3px;color:#fff;}
+.badge svg{width:9px;height:9px;}
+.badge.link{color:var(--accent2);}
+.badge.mute{color:var(--danger);}
+.trim{position:absolute;top:0;bottom:0;width:8px;z-index:5;cursor:ew-resize;}
+.trim.l{left:0;}
+.trim.r{right:0;}
+.trim:hover{background:rgba(255,176,32,.35);}
+.insert-marker{position:absolute;width:2px;background:var(--accent2);z-index:15;
   box-shadow:0 0 6px var(--accent2);pointer-events:none;}
 .insert-marker.hidden{display:none;}
+.snap-marker{position:absolute;width:1px;background:var(--amber);z-index:14;pointer-events:none;opacity:.8;}
+.snap-marker.hidden{display:none;}
 .playhead{position:absolute;top:0;bottom:0;width:2px;background:var(--amber);z-index:30;pointer-events:auto;
   cursor:ew-resize;}
 .playhead::before{content:'';position:absolute;top:0;left:-6px;width:14px;height:10px;
@@ -182,13 +203,13 @@ button{font-family:inherit;}
 /* ---------- overlays ---------- */
 .drop-overlay{position:fixed;inset:0;background:rgba(20,21,26,.88);z-index:200;display:flex;
   align-items:center;justify-content:center;font-size:22px;font-weight:600;color:var(--accent2);
-  border:3px dashed var(--accent2);margin:14px;border-radius:14px;pointer-events:none;}
+  border:3px dashed var(--accent2);margin:14px;border-radius:14px;pointer-events:none;text-align:center;}
 .drop-overlay.hidden{display:none;}
 
 .toast-container{position:fixed;right:16px;bottom:16px;display:flex;flex-direction:column;gap:8px;z-index:300;}
 .toast{background:var(--panel2);border:1px solid var(--border);border-left:3px solid var(--accent);
   border-radius:8px;padding:10px 14px;font-size:12.5px;box-shadow:0 6px 20px rgba(0,0,0,.4);
-  opacity:0;transform:translateY(8px);transition:opacity .25s,transform .25s;max-width:320px;}
+  opacity:0;transform:translateY(8px);transition:opacity .25s,transform .25s;max-width:340px;line-height:1.5;}
 .toast.show{opacity:1;transform:translateY(0);}
 .toast-warn{border-left-color:var(--amber);}
 .toast-error{border-left-color:var(--danger);}
@@ -196,16 +217,31 @@ button{font-family:inherit;}
 .export-overlay{position:fixed;inset:0;background:rgba(10,11,14,.92);z-index:400;
   display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;}
 .export-overlay.hidden{display:none;}
-.export-box{width:360px;display:flex;flex-direction:column;gap:14px;align-items:center;}
+.export-box{width:380px;display:flex;flex-direction:column;gap:14px;align-items:center;}
 .export-label{font-size:13.5px;color:var(--text);}
 .export-bar-track{width:100%;height:8px;background:var(--panel2);border-radius:5px;overflow:hidden;
   border:1px solid var(--border);}
 .export-bar-fill{height:100%;width:0%;background:linear-gradient(90deg,var(--accent),var(--accent2));
   transition:width .15s;}
 .export-pct{font-family:var(--mono);font-size:12px;color:var(--muted);}
-.export-note{font-size:11.5px;color:var(--muted);text-align:center;max-width:320px;line-height:1.6;
+.export-note{font-size:11.5px;color:var(--muted);text-align:center;max-width:340px;line-height:1.6;
   background:var(--panel2);border:1px solid var(--border);border-radius:8px;padding:9px 12px;}
 .export-note b{color:var(--accent2);font-weight:600;}
+#exportCancel{margin-top:2px;}
+
+.modal-overlay{position:fixed;inset:0;background:rgba(10,11,14,.86);z-index:450;
+  display:flex;align-items:center;justify-content:center;}
+.modal-overlay.hidden{display:none;}
+.modal{width:460px;max-width:92vw;background:var(--panel);border:1px solid var(--border);
+  border-radius:12px;padding:20px;box-shadow:0 20px 50px rgba(0,0,0,.5);}
+.modal h3{margin:0 0 8px;font-size:15px;}
+.modal p{margin:0 0 12px;font-size:12.5px;color:var(--muted);line-height:1.6;}
+.modal-list{max-height:180px;overflow:auto;background:var(--panel2);border:1px solid var(--border);
+  border-radius:8px;padding:8px 10px;font-size:12px;font-family:var(--mono);margin-bottom:14px;}
+.modal-list div{padding:3px 0;display:flex;justify-content:space-between;gap:10px;}
+.modal-list .ok{color:var(--accent2);}
+.modal-list .miss{color:var(--amber);}
+.modal-actions{display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap;}
 
 .hidden{display:none !important;}
 </style>
@@ -221,8 +257,18 @@ button{font-family:inherit;}
     <div class="topbar-actions">
       <button class="btn" id="btnImport">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 16V4M12 4l-4 4M12 4l4 4"/><path d="M4 16v3a1 1 0 001 1h14a1 1 0 001-1v-3"/></svg>
-        동영상 가져오기
+        동영상 / 오디오 / 이미지
       </button>
+      <div class="topdiv"></div>
+      <button class="btn" id="btnSaveProject">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 4h11l4 4v12a0 0 0 010 0H5a1 1 0 01-1-1V5a1 1 0 011-1z"/><path d="M8 4v5h7M8 20v-6h8v6"/></svg>
+        프로젝트 저장
+      </button>
+      <button class="btn" id="btnOpenProject">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 7h6l2 2h10v9a1 1 0 01-1 1H3a1 1 0 01-1-1V7z"/></svg>
+        프로젝트 열기
+      </button>
+      <div class="topdiv"></div>
       <button class="btn btn-accent" id="btnExport">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 4v12M12 16l-4-4M12 16l4-4"/><path d="M4 20h16"/></svg>
         내보내기
@@ -230,13 +276,15 @@ button{font-family:inherit;}
     </div>
   </header>
 
-  <input type="file" id="fileInput" accept="video/*" multiple class="hidden">
+  <input type="file" id="fileInput" accept="video/*,audio/*,image/*" multiple class="hidden">
+  <input type="file" id="projectInput" accept=".json,application/json" class="hidden">
+  <input type="file" id="relinkInput" accept="video/*,audio/*,image/*" multiple class="hidden">
 
   <main class="stage-wrap">
     <div class="media-bin">
-      <div class="bin-header">미디어</div>
+      <div class="bin-header"><span>미디어</span><span id="binCount"></span></div>
       <div class="bin-list" id="binList">
-        <div class="bin-empty" id="binEmpty">동영상을 가져오면<br>여기에 표시됩니다.</div>
+        <div class="bin-empty" id="binEmpty">동영상 · 오디오 · 이미지를<br>가져오면 여기에 표시됩니다.<br><br>동영상은 <b>영상 트랙(V1)</b>과<br><b>소리 트랙(A1)</b>으로<br>자동 분리됩니다.<br><br>이미지(JPG/PNG 등)는<br><b>V1</b>에 들어가며 길이를<br>자유롭게 조절할 수 있습니다.</div>
       </div>
     </div>
     <div class="program-monitor">
@@ -249,13 +297,13 @@ button{font-family:inherit;}
         </div>
       </div>
       <div class="transport">
-        <div class="transport-btn" id="btnToStart" title="처음으로">
+        <div class="transport-btn" id="btnToStart" title="처음으로 (Home)">
           <svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 5h2v14H6zM20 5v14l-11-7z" transform="scale(-1,1) translate(-24,0)"/></svg>
         </div>
-        <div class="transport-btn" id="btnPlay" title="재생/일시정지">
+        <div class="transport-btn" id="btnPlay" title="재생/일시정지 (Space)">
           <svg id="playIcon" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
         </div>
-        <div class="transport-btn" id="btnToEnd" title="끝으로">
+        <div class="transport-btn" id="btnToEnd" title="끝으로 (End)">
           <svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 5h2v14H6zM20 5v14l-11-7z"/></svg>
         </div>
         <div class="timecode" id="timecode">00:00.00<span class="sep">/</span>00:00.00</div>
@@ -266,7 +314,7 @@ button{font-family:inherit;}
   <section class="timeline-panel">
     <div class="tl-toolbar">
       <div class="tgroup">
-        <div class="ebtn" id="btnCut" title="자르기 (재생헤드 이후 삭제)">
+        <div class="ebtn" id="btnCut" title="자르기 — 재생헤드 이후 삭제">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="6" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><path d="M8.5 8L19 19M19 5L8.5 16"/></svg>
           <span>자르기</span>
         </div>
@@ -289,6 +337,17 @@ button{font-family:inherit;}
       </div>
       <div class="tdiv"></div>
       <div class="tgroup">
+        <div class="ebtn" id="btnLink" title="영상↔소리 링크 켜기/끄기">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 007 0l3-3a5 5 0 00-7-7l-1 1"/><path d="M14 11a5 5 0 00-7 0l-3 3a5 5 0 007 7l1-1"/></svg>
+          <span id="linkLabel">링크 해제</span>
+        </div>
+        <div class="ebtn" id="btnMute" title="선택한 소리 클립 음소거">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 9v6h4l5 5V4L8 9H4z"/><path d="M17 9l4 6M21 9l-4 6"/></svg>
+          <span>음소거</span>
+        </div>
+      </div>
+      <div class="tdiv"></div>
+      <div class="tgroup">
         <select class="tsel" id="fadeLenSelect">
           <option value="0.5">0.5초</option>
           <option value="1" selected>1초</option>
@@ -305,40 +364,57 @@ button{font-family:inherit;}
       </div>
       <div class="tdiv"></div>
       <div class="tgroup">
-        <span class="tlabel">클립별 볼륨조절</span>
+        <span class="tlabel">이미지 길이</span>
+        <input type="number" class="vol-input" id="imgDurInput" min="0.2" max="600" step="0.5" value="5">
+        <span class="vol-pct">초</span>
+        <button class="ebtn-text" id="btnImgFit" title="이미지를 영상 높이에 꽉 맞출지, 전체가 보이도록 넣을지 선택합니다">높이 맞춤</button>
+      </div>
+      <div class="tdiv"></div>
+      <div class="tgroup">
+        <span class="tlabel">볼륨</span>
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:15px;height:15px;color:var(--muted);"><path d="M4 9v6h4l5 5V4L8 9H4z"/><path d="M17 8a5 5 0 010 8"/></svg>
-        <input type="range" class="vol-slider" id="volSlider" min="-100" max="100" step="5" value="0">
+        <input type="range" class="vol-slider" id="volSlider" min="-100" max="100" step="1" value="0">
         <input type="number" class="vol-input" id="volInput" min="-100" max="100" step="1" value="0">
         <span class="vol-pct">%</span>
+        <span class="vol-target none" id="volTarget" title="소리 클립을 선택하면 볼륨을 조절할 수 있습니다.">대상 없음</span>
       </div>
       <div class="tl-toolbar-spacer"></div>
-      <span class="clip-count" id="clipCount">0개 클립</span>
+      <span class="sel-label" id="selLabel"></span>
+      <span class="clip-count" id="clipCount">V 0 / A 0</span>
       <div class="tgroup">
-        <span class="tlabel">줌</span>
-        <input type="range" class="zoom-slider" id="zoomSlider" min="0.2" max="30" step="any" value="1">
+        <span class="tlabel" title="Ctrl(⌘)+휠로도 확대/축소할 수 있습니다">줌</span>
+        <input type="range" class="zoom-slider" id="zoomSlider" min="0.2" max="90" step="any" value="1">
       </div>
     </div>
 
     <div class="tl-scroll" id="tlScroll">
       <div class="tl-content" id="tlContent">
-        <div class="tl-ruler-row">
+        <div class="tl-row">
           <div class="tl-label"></div>
           <div class="tl-ruler" id="ruler"></div>
         </div>
-        <div class="tl-track-row">
-          <div class="tl-label">V1</div>
-          <div class="tl-track" id="track"></div>
+        <div class="tl-row">
+          <div class="tl-label v">V1</div>
+          <div class="tl-track" id="vtrack"><div class="track-hint" id="vHint">동영상을 가져오면 영상 클립이 여기에 표시됩니다.</div></div>
+        </div>
+        <div class="tl-row">
+          <div class="tl-label a">A1</div>
+          <div class="tl-track audio" id="atrack1"><div class="track-hint" id="aHint1">동영상의 소리와 오디오 파일이 여기에 표시됩니다. 드래그로 위치를 옮기거나 A2로 내릴 수 있습니다.</div></div>
+        </div>
+        <div class="tl-row">
+          <div class="tl-label a">A2</div>
+          <div class="tl-track audio" id="atrack2"><div class="track-hint" id="aHint2">두 번째 소리 채널 — 배경음악·내레이션을 겹쳐 넣을 때 사용하세요.</div></div>
         </div>
         <div class="insert-marker hidden" id="insertMarker"></div>
+        <div class="snap-marker hidden" id="snapMarker"></div>
         <div class="playhead" id="playheadLine"></div>
-        <div class="track-empty hidden" id="trackEmpty">동영상을 가져오면 여기에 클립이 표시됩니다.</div>
       </div>
     </div>
   </section>
 
 </div>
 
-<div class="drop-overlay hidden" id="dropOverlay">여기에 동영상을 놓으세요</div>
+<div class="drop-overlay hidden" id="dropOverlay">여기에 동영상 · 오디오 · 이미지 파일을 놓으세요</div>
 
 <div class="toast-container" id="toastContainer"></div>
 
@@ -348,6 +424,21 @@ button{font-family:inherit;}
     <div class="export-bar-track"><div class="export-bar-fill" id="exportProgressBar"></div></div>
     <div class="export-pct" id="exportProgressPct">0%</div>
     <div class="export-note" id="exportNote">완료되면 브라우저의 <b>기본 다운로드 폴더</b>에 파일이 자동으로 저장됩니다.</div>
+    <button class="btn" id="exportCancel">내보내기 취소</button>
+  </div>
+</div>
+
+<div class="modal-overlay hidden" id="relinkOverlay">
+  <div class="modal">
+    <h3>프로젝트 미디어 연결</h3>
+    <p>프로젝트 파일(JSON)에는 영상·소리 데이터가 들어 있지 않습니다.<br>
+       아래 목록의 원본 파일을 선택하면 편집 상태가 그대로 복원됩니다.</p>
+    <div class="modal-list" id="relinkList"></div>
+    <div class="modal-actions">
+      <button class="btn" id="relinkCancel">취소</button>
+      <button class="btn" id="relinkSkip">연결된 것만 열기</button>
+      <button class="btn btn-accent" id="relinkPick">미디어 파일 선택</button>
+    </div>
   </div>
 </div>
 
@@ -2256,7 +2347,6 @@ If you want to offset all timestamps of a track such that the first one is zero,
   return __toCommonJS(src_exports);
 })();
 if (typeof module === "object" && typeof module.exports === "object") Object.assign(module.exports, Mp4Muxer)
-
 </script>
 
 <script>
@@ -2267,28 +2357,35 @@ if (typeof module === "object" && typeof module.exports === "object") Object.ass
    STATE
    ========================================================= */
 const state = {
-  sources: {},
-  clips: [],
+  sources: {},          /* id -> {id,name,kind,url,duration,thumb,color,size,el,peaks,hasAudio} */
+  vclips: [],           /* video track: sequential, no gaps */
+  aclips: [],           /* audio track: absolute position (start) */
   playhead: 0,
   pxPerSec: 1,
   minPxPerSec: 1,
   isPlaying: false,
-  activeIdx: -1,
   activeSourceId: null,
-  selectedId: null,
+  selected: null,       /* {track:'V'|'A', id} */
   history: [],
-  audio: { ctx:null, gain:null, dest:null }
+  audio: { ctx:null, master:null, handles:Object.create(null) }
 };
 
 let nextId = 1;
-const uid = (p)=> p + (nextId++);
+const uid = (p)=> p + '_' + (nextId++) + '_' + Math.floor(Math.random()*1e6).toString(36);
 
 const COLORS = ['#7c5cff','#2dd4bf','#ffb020','#ff5c7a','#5c9eff','#c17cff','#5cff9e','#ff9e5c'];
 let colorIdx = 0;
 function nextColor(){ const c = COLORS[colorIdx % COLORS.length]; colorIdx++; return c; }
 
-const LABEL_WIDTH = 42;
+const LABEL_WIDTH = 46;
 const FPS = 30;
+const MIN_CLIP = 0.08;
+const PEAK_BUCKETS = 3000;
+const PEAK_MAX_BYTES = 350 * 1024 * 1024;
+const DEFAULT_IMAGE_DUR = 5;    /* seconds a still gets when first inserted */
+const IMAGE_MAX_DUR = 600;      /* a still can be stretched this far */
+const MAX_ZOOM = 90;   /* px per second at full zoom-in */
+const MAX_TICKS = 900; /* keeps the DOM sane at high zoom on long timelines */
 
 /* =========================================================
    DOM
@@ -2300,18 +2397,33 @@ const ctx2d = canvas.getContext('2d');
 const placeholder = $('placeholder');
 const binList = $('binList');
 const binEmpty = $('binEmpty');
+const binCount = $('binCount');
 const fileInput = $('fileInput');
+const projectInput = $('projectInput');
+const relinkInput = $('relinkInput');
 const timecodeEl = $('timecode');
 const tlScroll = $('tlScroll');
 const tlContent = $('tlContent');
 const ruler = $('ruler');
-const track = $('track');
+const vtrack = $('vtrack');
+const atrack1 = $('atrack1');
+const atrack2 = $('atrack2');
+const vHint = $('vHint');
+const aHint1 = $('aHint1');
+const aHint2 = $('aHint2');
+const AUDIO_TRACKS = [1,2];
+function atrackEl(n){ return (n===2) ? atrack2 : atrack1; }
+function aTrackOf(c){ return c.track===2 ? 2 : 1; }
 const insertMarker = $('insertMarker');
-const trackEmpty = $('trackEmpty');
+const snapMarker = $('snapMarker');
 const playheadLine = $('playheadLine');
 const zoomSlider = $('zoomSlider');
 const clipCountEl = $('clipCount');
+const selLabel = $('selLabel');
 const volSlider = $('volSlider');
+const volTargetEl = $('volTarget');
+const imgDurInput = $('imgDurInput');
+const btnImgFit = $('btnImgFit');
 const volInput = $('volInput');
 const fadeLenSelect = $('fadeLenSelect');
 const dropOverlay = $('dropOverlay');
@@ -2322,25 +2434,74 @@ const exportProgressPct = $('exportProgressPct');
 const exportNote = $('exportNote');
 const toastContainer = $('toastContainer');
 const playIcon = $('playIcon');
+const linkLabel = $('linkLabel');
+const relinkOverlay = $('relinkOverlay');
+const relinkList = $('relinkList');
 
 /* =========================================================
-   HELPERS
+   BASIC HELPERS
    ========================================================= */
 function clipDur(c){ return Math.max(0, c.out - c.in); }
-function totalDuration(){ return state.clips.reduce((s,c)=>s+clipDur(c),0); }
-function clipStart(i){ let s=0; for(let k=0;k<i;k++) s += clipDur(state.clips[k]); return s; }
-function locate(t){
-  if(state.clips.length===0) return null;
+function vTotal(){ return state.vclips.reduce((s,c)=>s+clipDur(c), 0); }
+function aEnd(c){ return c.start + clipDur(c); }
+function totalDuration(){
+  let t = vTotal();
+  state.aclips.forEach(function(c){ t = Math.max(t, aEnd(c)); });
+  return t;
+}
+function vStartOf(i){ let s=0; for(let k=0;k<i;k++) s += clipDur(state.vclips[k]); return s; }
+function vStartOfClip(c){ const i = state.vclips.indexOf(c); return i<0 ? 0 : vStartOf(i); }
+function videoAt(t){
+  const total = vTotal();
+  if(state.vclips.length===0 || total<=0) return null;
+  if(t < 0 || t >= total) return null;
   let s = 0;
-  for(let i=0;i<state.clips.length;i++){
-    const d = clipDur(state.clips[i]);
-    if(t < s + d - 1e-9 || i === state.clips.length-1){
-      return { index:i, offset: Math.min(Math.max(t-s,0), d) };
-    }
+  for(let i=0;i<state.vclips.length;i++){
+    const d = clipDur(state.vclips[i]);
+    if(t < s + d) return { index:i, offset: Math.max(0, t-s) };
     s += d;
   }
-  return { index: state.clips.length-1, offset: clipDur(state.clips[state.clips.length-1]) };
+  return { index: state.vclips.length-1, offset: clipDur(state.vclips[state.vclips.length-1]) };
 }
+function videoAtClamped(t){
+  const total = vTotal();
+  if(total<=0) return null;
+  return videoAt(Math.min(t, total-0.001));
+}
+function audioAt(t){
+  return state.aclips.filter(function(c){ return t >= c.start && t < aEnd(c); });
+}
+function findClip(track, id){
+  const arr = track==='V' ? state.vclips : state.aclips;
+  return arr.find(function(c){ return c.id===id; }) || null;
+}
+function selectedClip(){
+  if(!state.selected) return null;
+  const c = findClip(state.selected.track, state.selected.id);
+  return c ? { track: state.selected.track, clip: c } : null;
+}
+function volOf(c){ return c.mute ? 0 : (c.volume==null ? 1 : c.volume); }
+function isImageSrc(src){ return !!src && src.kind === 'image'; }
+function isImageClip(c){ return isImageSrc(state.sources[c.sourceId]); }
+/* A still has no intrinsic length, so its clip may be stretched freely. */
+function sourceMaxDur(src){
+  if(!src) return IMAGE_MAX_DUR;
+  return src.kind === 'image' ? IMAGE_MAX_DUR : src.duration;
+}
+/* Prefers A1, but drops to A2 when A1 is already occupied at that spot so a
+   newly imported sound never lands on top of an existing one. */
+function pickAudioTrack(start, length, ignoreId){
+  function busy(n){
+    return state.aclips.some(function(c){
+      if(c.id===ignoreId || aTrackOf(c)!==n) return false;
+      return start < aEnd(c)-1e-6 && (start+length) > c.start+1e-6;
+    });
+  }
+  if(!busy(1)) return 1;
+  if(!busy(2)) return 2;
+  return 1;
+}
+
 function fmtTime(t){
   if(!isFinite(t) || t<0) t = 0;
   const m = Math.floor(t/60);
@@ -2354,19 +2515,17 @@ function fmtTickLabel(t, step){
   if(m>0) return m+':'+String(s).padStart(2,'0');
   return s+'s';
 }
-function clipFadeFactor(c, offset){
-  const dur = clipDur(c);
+function fadeFactor(c, offset){
+  const d = clipDur(c);
   let f = 1;
   const fi = c.fadeIn||0, fo = c.fadeOut||0;
   if(fi>0 && offset < fi) f = Math.min(f, Math.max(0,offset)/fi);
-  if(fo>0 && offset > dur-fo) f = Math.min(f, Math.max(0,(dur-offset))/fo);
+  if(fo>0 && offset > d-fo) f = Math.min(f, Math.max(0,(d-offset))/fo);
   return Math.max(0, Math.min(1, f));
 }
-/* Volume slider shows an intuitive -100%..+100% range, but the gain curve
-   is intentionally asymmetric:
-   - Negative side is linear down to 0 at -100% (true silence).
-   - Positive side is boosted (BOOST_FACTOR) so +100% gives a clearly
-     audible increase instead of a barely-noticeable 2x gain. */
+/* Volume slider shows an intuitive -100%..+100% range with an asymmetric
+   gain curve: negative is linear down to true silence, positive is boosted
+   so +100% is clearly audible. */
 const VOLUME_BOOST_FACTOR = 4;
 function pctToVolume(pct){
   if(pct >= 0) return 1 + (pct/100) * VOLUME_BOOST_FACTOR;
@@ -2380,28 +2539,7 @@ function volumeToPct(vol){
 function escapeHtml(s){
   return String(s).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 }
-
-/* =========================================================
-   HISTORY (undo)
-   ========================================================= */
-function pushHistory(){
-  state.history.push(JSON.stringify(state.clips));
-  if(state.history.length>60) state.history.shift();
-}
-function undo(){
-  if(state.history.length===0){ toast('되돌릴 내용이 없습니다.','warn'); return; }
-  const snap = state.history.pop();
-  let restored = JSON.parse(snap);
-  const droppedCount = restored.length;
-  restored = restored.filter(function(c){ return !!state.sources[c.sourceId]; });
-  if(restored.length < droppedCount){
-    toast('일부 클립은 원본 미디어가 제거되어 복원할 수 없습니다.', 'warn');
-  }
-  state.clips = restored;
-  if(!state.clips.find(c=>c.id===state.selectedId)) state.selectedId=null;
-  afterChange();
-  toast('되돌렸습니다.','info');
-}
+function clamp(v,a,b){ return Math.max(a, Math.min(b, v)); }
 
 /* =========================================================
    TOAST
@@ -2416,64 +2554,274 @@ function toast(msg, type){
   setTimeout(()=>{
     el.classList.remove('show');
     setTimeout(()=> el.remove(), 300);
-  }, 3200);
+  }, 3600);
+}
+
+/* =========================================================
+   HISTORY
+   ========================================================= */
+function pushHistory(){
+  state.history.push(JSON.stringify({ v: state.vclips, a: state.aclips }));
+  if(state.history.length>80) state.history.shift();
+}
+function undo(){
+  if(state.history.length===0){ toast('되돌릴 내용이 없습니다.','warn'); return; }
+  const snap = JSON.parse(state.history.pop());
+  const before = snap.v.length + snap.a.length;
+  state.vclips = snap.v.filter(function(c){ return !!state.sources[c.sourceId]; });
+  state.aclips = snap.a.filter(function(c){ return !!state.sources[c.sourceId]; });
+  if(state.vclips.length + state.aclips.length < before){
+    toast('일부 클립은 원본 미디어가 제거되어 복원할 수 없습니다.','warn');
+  }
+  if(state.selected && !findClip(state.selected.track, state.selected.id)) state.selected = null;
+  afterChange(true);
+  toast('되돌렸습니다.','info');
+}
+
+/* =========================================================
+   AUDIO ENGINE (A1 track playback)
+   ========================================================= */
+function getCtx(){
+  if(!state.audio.ctx){
+    const AC = window.AudioContext || window.webkitAudioContext;
+    state.audio.ctx = new AC();
+    state.audio.master = state.audio.ctx.createGain();
+    state.audio.master.gain.value = 1;
+    state.audio.master.connect(state.audio.ctx.destination);
+  }
+  return state.audio.ctx;
+}
+/* Each audio clip gets its own <audio> element + gain node so overlapping
+   clips mix correctly and each keeps an independent volume/fade. */
+const AUDIO_PREROLL = 0.35;   /* seconds a clip is armed before it is heard */
+
+function handleFor(c){
+  const h = state.audio.handles;
+  if(h[c.id]) return h[c.id];
+  const src = state.sources[c.sourceId];
+  if(!src) return null;
+  const el = document.createElement('audio');
+  el.preload = 'auto';
+  el.src = src.url;
+  const rec = { el: el, node: null, gain: null, direct: false };
+  try{
+    const ctx = getCtx();
+    rec.node = ctx.createMediaElementSource(el);
+    rec.gain = ctx.createGain();
+    rec.gain.gain.value = 0;
+    rec.node.connect(rec.gain);
+    rec.gain.connect(state.audio.master);
+  }catch(e){
+    /* If the graph cannot take another source node, fall back to playing
+       straight through the element. Degraded (no >100% boost) but audible —
+       far better than a clip that is silently dead. */
+    rec.node = null; rec.gain = null; rec.direct = true;
+    try{ el.volume = 0; }catch(e2){}
+  }
+  try{ el.load(); }catch(e){}
+  h[c.id] = rec;
+  return rec;
+}
+function setHandleGain(rec, v){
+  v = Math.max(0, v);
+  if(rec.gain){ rec.gain.gain.value = v; }
+  else { try{ rec.el.volume = Math.min(1, v); }catch(e){} }
+}
+function audioReady(rec){ return !!rec && rec.el.readyState >= 1; }
+function seekHandle(rec, want){
+  try{ rec.el.currentTime = Math.max(0, want); return true; }
+  catch(e){ return false; }
+}
+function pauseHandle(rec){
+  if(!rec) return;
+  setHandleGain(rec, 0);
+  if(!rec.el.paused){ try{ rec.el.pause(); }catch(e){} }
+}
+function releaseHandle(id){
+  const rec = state.audio.handles[id];
+  if(!rec) return;
+  try{ rec.el.pause(); }catch(e){}
+  try{ if(rec.node) rec.node.disconnect(); if(rec.gain) rec.gain.disconnect(); }catch(e){}
+  try{ rec.el.removeAttribute('src'); rec.el.load(); }catch(e){}
+  delete state.audio.handles[id];
+}
+function gcHandles(){
+  Object.keys(state.audio.handles).forEach(function(id){
+    if(!state.aclips.some(function(c){ return c.id===id; })) releaseHandle(id);
+  });
+}
+/* Create the elements early so they are buffered by the time playback or a
+   clip boundary needs them. */
+function primeAudioHandles(){
+  if(state.aclips.length > 24) return;
+  state.aclips.forEach(function(c){ handleFor(c); });
+}
+function silenceAudio(){
+  Object.keys(state.audio.handles).forEach(function(id){
+    pauseHandle(state.audio.handles[id]);
+  });
+}
+/* Positions (and waits briefly for) every clip audible at time t, so pressing
+   play right after an edit does not start on a cold, unseekable element. */
+async function primeAudioAt(t, timeoutMs){
+  const active = state.aclips.filter(function(c){
+    const off = t - c.start;
+    return clipDur(c) > 0 && off >= -0.004 && off < clipDur(c) - 0.008;
+  });
+  const recs = [];
+  active.forEach(function(c){
+    const rec = handleFor(c);
+    if(rec) recs.push({ c: c, rec: rec });
+  });
+  if(!recs.length) return;
+  const t0 = performance.now();
+  while(recs.some(function(x){ return !audioReady(x.rec); }) &&
+        performance.now() - t0 < (timeoutMs || 800)){
+    await new Promise(function(r){ setTimeout(r, 20); });
+  }
+  recs.forEach(function(x){
+    if(!audioReady(x.rec)) return;
+    setHandleGain(x.rec, 0);
+    seekHandle(x.rec, x.c.in + Math.max(0, t - x.c.start));
+  });
+}
+function syncAudio(t){
+  state.aclips.forEach(function(c){
+    const d = clipDur(c);
+    if(d <= 0){ pauseHandle(state.audio.handles[c.id]); return; }
+    const off = t - c.start;
+    const active = off >= -0.004 && off < d - 0.008;
+    /* Arm the clip slightly early and silently: a split point or a clip
+       boundary would otherwise drop out while the element seeks and buffers. */
+    const arming = !active && off < 0 && off >= -AUDIO_PREROLL && (c.in + off) >= 0;
+    if(!active && !arming){ pauseHandle(state.audio.handles[c.id]); return; }
+
+    const rec = handleFor(c);
+    if(!rec) return;
+    setHandleGain(rec, active ? fadeFactor(c, Math.max(0, off)) * volOf(c) : 0);
+    if(!audioReady(rec)) return;   /* still loading — retried next frame */
+    const want = c.in + off;
+    if(rec.el.paused){
+      seekHandle(rec, want);
+      const p = rec.el.play();
+      if(p && p.catch) p.catch(function(){});
+    } else if(Math.abs(rec.el.currentTime - want) > 0.22){
+      seekHandle(rec, want);
+    }
+  });
 }
 
 /* =========================================================
    IMPORT
    ========================================================= */
-fileInput.addEventListener('change', (e)=>{
+fileInput.addEventListener('change', function(e){
   handleFiles(e.target.files);
   fileInput.value = '';
 });
-$('btnImport').addEventListener('click', ()=> fileInput.click());
+$('btnImport').addEventListener('click', function(){ fileInput.click(); });
+
+function isAudioFile(f){
+  return (f.type && f.type.indexOf('audio/')===0) || /\.(mp3|wav|m4a|aac|ogg|oga|opus|flac|weba)$/i.test(f.name||'');
+}
+function isVideoFile(f){
+  return (f.type && f.type.indexOf('video/')===0) || /\.(mp4|mov|webm|mkv|avi|m4v)$/i.test(f.name||'');
+}
+function isImageFile(f){
+  return (f.type && f.type.indexOf('image/')===0) || /\.(jpe?g|png|gif|webp|bmp|avif|heic)$/i.test(f.name||'');
+}
 
 async function handleFiles(fileList){
   const all = Array.from(fileList || []);
-  const files = all.filter(f=> f.type && f.type.startsWith('video/'));
+  const files = all.filter(function(f){ return isVideoFile(f) || isAudioFile(f) || isImageFile(f); });
   const rejected = all.length - files.length;
-  if(rejected>0) toast(rejected+'개 파일은 동영상이 아니라 무시했습니다.', 'warn');
+  if(rejected>0) toast(rejected+'개 파일은 동영상/오디오/이미지가 아니라 무시했습니다.','warn');
   for(const f of files){
     try{ await importFile(f); }
-    catch(err){ console.error(err); toast(f.name+' 가져오기에 실패했습니다.', 'error'); }
+    catch(err){ console.error(err); toast(f.name+' 가져오기에 실패했습니다.','error'); }
   }
 }
 
-function importFile(file){
-  return new Promise((resolve)=>{
+/* opts: {forceId, color, noClip} */
+function importFile(file, opts){
+  opts = opts || {};
+  return new Promise(function(resolve){
+    const audioOnly = isAudioFile(file) && !isVideoFile(file);
+    const imageOnly = isImageFile(file) && !isVideoFile(file) && !isAudioFile(file);
     const url = URL.createObjectURL(file);
+
+    function register(kind, duration, thumb, providedEl){
+      const id = opts.forceId || uid('src');
+      const color = opts.color || nextColor();
+      let el = providedEl || null;
+      if(kind === 'video'){
+        el = document.createElement('video');
+        el.preload = 'auto';
+        el.playsInline = true;
+        /* Audio is handled entirely by the A1 track, so the picture
+           element itself is always silent. */
+        el.muted = true;
+        el.src = url;
+        el.load();
+        screenEl.insertBefore(el, canvas);
+      }
+      const src = { id, name:file.name, kind, url, duration, thumb, color,
+                    size:file.size||0, el, peaks:null,
+                    hasAudio:(kind==='audio' ? true : (kind==='image' ? false : null)),
+                    iw:(providedEl && providedEl.naturalWidth) || 0,
+                    ih:(providedEl && providedEl.naturalHeight) || 0 };
+      state.sources[id] = src;
+      addBinItem(src);
+      if(!opts.noClip) addSourceToTimeline(src, kind==='audio' ? state.playhead : null, true);
+      if(kind !== 'image') buildPeaks(src, file);
+      resolve(id);
+    }
+
+    if(imageOnly){
+      const img = new Image();
+      let done = false;
+      img.addEventListener('load', function(){
+        if(done) return; done = true;
+        register('image', DEFAULT_IMAGE_DUR, url, img);
+      }, { once:true });
+      img.addEventListener('error', function(){
+        if(done) return; done = true;
+        toast(file.name+' 이미지를 열 수 없습니다.','error');
+        resolve(null);
+      }, { once:true });
+      img.src = url;
+      return;
+    }
+
+    if(audioOnly){
+      const probe = document.createElement('audio');
+      probe.preload = 'metadata';
+      probe.src = url;
+      let done = false;
+      probe.addEventListener('loadedmetadata', function(){
+        if(done) return; done = true;
+        register('audio', probe.duration || 0, null);
+      }, { once:true });
+      probe.addEventListener('error', function(){
+        if(done) return; done = true;
+        toast(file.name+' 파일을 열 수 없습니다.','error');
+        resolve(null);
+      }, { once:true });
+      return;
+    }
+
     const probe = document.createElement('video');
     probe.preload = 'auto';
     probe.muted = true;
     probe.src = url;
     let finalized = false;
 
-    function finalize(duration, thumb){
-      if(finalized) return;
-      finalized = true;
-      const id = uid('src');
-      const color = nextColor();
-      const el = document.createElement('video');
-      el.preload = 'auto';
-      el.playsInline = true;
-      el.muted = false;
-      el.src = url;
-      el.load();
-      screenEl.insertBefore(el, canvas);
-      state.sources[id] = { id, name:file.name, url, duration, thumb, color, el };
-      addBinItem(state.sources[id]);
-      state.clips.push({ id: uid('clip'), sourceId:id, in:0, out:duration, fadeIn:0, fadeOut:0, volume:1 });
-      afterChange();
-      resolve();
-    }
-
-    probe.addEventListener('loadedmetadata', ()=>{
+    probe.addEventListener('loadedmetadata', function(){
       const duration = probe.duration || 0;
       const mid = duration>0.2 ? duration/2 : 0;
-      let seekDone = false;
+      let captured = false;
       function capture(){
-        if(seekDone) return;
-        seekDone = true;
+        if(captured || finalized) return;
+        captured = true; finalized = true;
         const w = 96;
         const vw = probe.videoWidth || 16, vh = probe.videoHeight || 9;
         const h = Math.max(1, Math.round(w * (vh/vw)));
@@ -2482,7 +2830,7 @@ function importFile(file){
         const cctx = cv.getContext('2d');
         let thumb = '';
         try{ cctx.drawImage(probe,0,0,w,h); thumb = cv.toDataURL('image/jpeg',0.72); }catch(e){}
-        finalize(duration, thumb);
+        register('video', duration, thumb);
       }
       probe.addEventListener('seeked', capture, { once:true });
       try{ probe.currentTime = Math.min(Math.max(mid,0), Math.max(duration-0.05,0)); }
@@ -2490,73 +2838,187 @@ function importFile(file){
       setTimeout(capture, 1500);
     }, { once:true });
 
-    probe.addEventListener('error', ()=>{
+    probe.addEventListener('error', function(){
       if(finalized) return;
       finalized = true;
-      toast(file.name+' 파일을 열 수 없습니다.', 'error');
-      resolve();
+      toast(file.name+' 파일을 열 수 없습니다.','error');
+      resolve(null);
     });
   });
 }
+
+/* Adds a source to the timeline. Video sources are split into a picture clip
+   (V1) and a linked sound clip (A1). */
+function addSourceToTimeline(src, atTime, silent){
+  pushHistory();
+  if(src.kind === 'audio'){
+    const start = atTime==null ? state.playhead : atTime;
+    const st = Math.max(0,start);
+    const c = { id: uid('a'), sourceId: src.id, start: st, track: pickAudioTrack(st, src.duration),
+                in:0, out: src.duration, fadeIn:0, fadeOut:0, volume:1, mute:false, linkId:null, linked:false };
+    state.aclips.push(c);
+    state.selected = { track:'A', id:c.id };
+  } else if(src.kind === 'image'){
+    /* Stills carry a default length and a fit mode; no sound clip. */
+    const v = { id: uid('v'), sourceId: src.id, in:0, out: src.duration,
+                fadeIn:0, fadeOut:0, linkId: null, fit:'height' };
+    state.vclips.push(v);
+    state.selected = { track:'V', id:v.id };
+  } else {
+    const linkId = uid('lnk');
+    const v = { id: uid('v'), sourceId: src.id, in:0, out: src.duration,
+                fadeIn:0, fadeOut:0, linkId: linkId };
+    state.vclips.push(v);
+    if(src.hasAudio !== false){
+      const vs = vStartOfClip(v);
+      const a = { id: uid('a'), sourceId: src.id, start: vs, track: pickAudioTrack(vs, src.duration),
+                  in:0, out: src.duration, fadeIn:0, fadeOut:0, volume:1, mute:false,
+                  linkId: linkId, linked:true };
+      state.aclips.push(a);
+    }
+    state.selected = { track:'V', id:v.id };
+  }
+  afterChange();
+}
+
+
+/* ---- waveform peaks (also detects whether a video actually has sound) ---- */
+async function buildPeaks(src, file){
+  if(file && file.size > PEAK_MAX_BYTES){ src.hasAudio = true; return; }
+  try{
+    const buf = await (file ? file.arrayBuffer() : fetch(src.url).then(r=>r.arrayBuffer()));
+    const decoded = await getCtx().decodeAudioData(buf);
+    const ch = decoded.getChannelData(0);
+    const n = PEAK_BUCKETS;
+    const step = Math.max(1, Math.floor(decoded.length/n));
+    const stride = Math.max(1, Math.floor(step/48));
+    const peaks = new Float32Array(n);
+    let loud = 0;
+    for(let i=0;i<n;i++){
+      let m = 0;
+      const s = i*step;
+      for(let j=0;j<step;j+=stride){
+        const v = Math.abs(ch[s+j]||0);
+        if(v>m) m = v;
+      }
+      peaks[i] = m;
+      if(m > 0.004) loud++;
+    }
+    src.peaks = peaks;
+    src.hasAudio = loud > 0;
+    if(src.hasAudio === false && src.kind === 'video'){
+      const removed = state.aclips.filter(function(c){ return c.sourceId===src.id; });
+      if(removed.length){
+        state.aclips = state.aclips.filter(function(c){ return c.sourceId!==src.id; });
+        toast(src.name+' 에는 소리가 없어 소리 클립을 만들지 않았습니다.','warn');
+      }
+    }
+    afterChange(true);
+  }catch(e){
+    /* Decode failure usually means "no audio track" for video files. */
+    if(src.kind === 'video'){
+      src.hasAudio = false;
+      const had = state.aclips.some(function(c){ return c.sourceId===src.id; });
+      state.aclips = state.aclips.filter(function(c){ return c.sourceId!==src.id; });
+      if(had) toast(src.name+' 에는 소리 트랙이 없습니다.','warn');
+      afterChange(true);
+    } else {
+      src.hasAudio = true;
+    }
+  }
+}
+
+/* =========================================================
+   MEDIA BIN
+   ========================================================= */
+const AUDIO_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18V5l11-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="17" cy="16" r="3"/></svg>';
 
 function addBinItem(src){
   binEmpty.classList.add('hidden');
   const item = document.createElement('div');
   item.className = 'bin-item';
   item.dataset.id = src.id;
+  const thumbHtml = src.kind==='audio'
+    ? '<div class="bin-thumb audio">'+AUDIO_ICON+'<span class="bin-swatch" style="background:'+src.color+'"></span></div>'
+    : '<div class="bin-thumb'+(src.kind==='image'?' image':'')+'" style="background-image:url(\''+(src.thumb||'')+'\')"><span class="bin-swatch" style="background:'+src.color+'"></span></div>';
   item.innerHTML =
-    '<div class="bin-thumb" style="background-image:url(\''+src.thumb+'\')">'+
-      '<span class="bin-swatch" style="background:'+src.color+'"></span>'+
-    '</div>'+
+    thumbHtml +
     '<div class="bin-meta">'+
       '<div class="bin-name" title="'+escapeHtml(src.name)+'">'+escapeHtml(src.name)+'</div>'+
-      '<div class="bin-dur">'+fmtTime(src.duration)+'</div>'+
+      '<div class="bin-dur"><span class="bin-kind">'+(src.kind==='audio'?'AUDIO':(src.kind==='image'?'IMAGE':'VIDEO'))+'</span>'+fmtTime(src.duration)+'</div>'+
     '</div>'+
     '<div class="bin-remove" title="미디어 제거">'+
       '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 6l12 12M18 6L6 18"/></svg>'+
     '</div>';
-  item.addEventListener('click', ()=>{
-    pushHistory();
-    state.clips.push({ id: uid('clip'), sourceId:src.id, in:0, out:src.duration, fadeIn:0, fadeOut:0, volume:1 });
-    afterChange();
-    toast(src.name+' 클립을 타임라인에 추가했습니다.', 'info');
+  item.addEventListener('click', function(){
+    addSourceToTimeline(src, src.kind==='audio' ? state.playhead : null);
+    toast(src.name + (src.kind==='audio' ? ' 을(를) A1 트랙에 추가했습니다.'
+      : (src.kind==='image' ? ' 을(를) V1 트랙에 '+DEFAULT_IMAGE_DUR+'초로 추가했습니다.'
+                            : ' 을(를) V1 + A1 트랙에 추가했습니다.')),'info');
   });
   item.querySelector('.bin-remove').addEventListener('click', function(e){
     e.stopPropagation();
     removeSource(src.id);
   });
   binList.appendChild(item);
+  updateBinCount();
 }
-
+function updateBinCount(){
+  const n = Object.keys(state.sources).length;
+  binCount.textContent = n>0 ? n+'개' : '';
+}
 function removeSource(sourceId){
   const src = state.sources[sourceId];
   if(!src) return;
-  const usedByClips = state.clips.some(function(c){ return c.sourceId === sourceId; });
-  if(usedByClips){
-    const ok = window.confirm(src.name + ' 미디어를 제거하면 타임라인에 있는 이 영상의 클립도 함께 삭제됩니다. 계속하시겠습니까?');
+  const used = state.vclips.some(function(c){return c.sourceId===sourceId;}) ||
+               state.aclips.some(function(c){return c.sourceId===sourceId;});
+  if(used){
+    const ok = window.confirm(src.name + ' 미디어를 제거하면 타임라인에 있는 이 파일의 클립도 함께 삭제됩니다. 계속하시겠습니까?');
     if(!ok) return;
   }
   pushHistory();
+  if(state.isPlaying) pause();
+  if(state.activeSourceId === sourceId) hideVideo();
 
-  if(state.isPlaying && state.activeSourceId === sourceId) pause();
-  if(state.activeSourceId === sourceId) activeSourceNone();
+  state.aclips.filter(function(c){return c.sourceId===sourceId;}).forEach(function(c){ releaseHandle(c.id); });
+  state.vclips = state.vclips.filter(function(c){ return c.sourceId!==sourceId; });
+  state.aclips = state.aclips.filter(function(c){ return c.sourceId!==sourceId; });
+  if(state.selected && !findClip(state.selected.track, state.selected.id)) state.selected = null;
 
-  state.clips = state.clips.filter(function(c){ return c.sourceId !== sourceId; });
-  if(state.selectedId && !state.clips.find(function(c){ return c.id===state.selectedId; })){
-    state.selectedId = null;
+  if(src.el){
+    try{ src.el.pause(); src.el.removeAttribute('src'); src.el.load(); }catch(e){}
+    if(src.el.parentNode) src.el.parentNode.removeChild(src.el);
   }
-
-  try{ src.el.pause(); src.el.removeAttribute('src'); src.el.load(); }catch(e){}
-  if(src.el.parentNode) src.el.parentNode.removeChild(src.el);
   try{ URL.revokeObjectURL(src.url); }catch(e){}
   delete state.sources[sourceId];
 
   const item = binList.querySelector('.bin-item[data-id="'+sourceId+'"]');
   if(item) item.remove();
   if(Object.keys(state.sources).length === 0) binEmpty.classList.remove('hidden');
-
+  updateBinCount();
   afterChange();
-  toast(src.name+' 미디어를 제거했습니다.', 'info');
+  toast(src.name+' 미디어를 제거했습니다.','info');
+}
+function clearAllMedia(){
+  Object.keys(state.audio.handles).forEach(releaseHandle);
+  Object.keys(state.sources).forEach(function(id){
+    const src = state.sources[id];
+    if(src.el){
+      try{ src.el.pause(); src.el.removeAttribute('src'); src.el.load(); }catch(e){}
+      if(src.el.parentNode) src.el.parentNode.removeChild(src.el);
+    }
+    try{ URL.revokeObjectURL(src.url); }catch(e){}
+    const item = binList.querySelector('.bin-item[data-id="'+id+'"]');
+    if(item) item.remove();
+  });
+  state.sources = {};
+  state.vclips = [];
+  state.aclips = [];
+  state.selected = null;
+  state.playhead = 0;
+  hideVideo();
+  binEmpty.classList.remove('hidden');
+  updateBinCount();
 }
 
 /* =========================================================
@@ -2564,31 +3026,30 @@ function removeSource(sourceId){
    ========================================================= */
 let dragDepth = 0;
 function hasFiles(e){ return e.dataTransfer && e.dataTransfer.types && Array.prototype.includes.call(e.dataTransfer.types, 'Files'); }
-window.addEventListener('dragenter', (e)=>{
+window.addEventListener('dragenter', function(e){
   if(!hasFiles(e)) return;
-  e.preventDefault();
-  dragDepth++;
+  e.preventDefault(); dragDepth++;
   dropOverlay.classList.remove('hidden');
 });
-window.addEventListener('dragover', (e)=>{
-  if(!hasFiles(e)) return;
-  e.preventDefault();
-});
-window.addEventListener('dragleave', (e)=>{
+window.addEventListener('dragover', function(e){ if(hasFiles(e)) e.preventDefault(); });
+window.addEventListener('dragleave', function(e){
   if(!hasFiles(e)) return;
   dragDepth = Math.max(0, dragDepth-1);
   if(dragDepth===0) dropOverlay.classList.add('hidden');
 });
-window.addEventListener('drop', (e)=>{
-  if(!hasFiles(e)){ return; }
+window.addEventListener('drop', function(e){
+  if(!hasFiles(e)) return;
   e.preventDefault();
   dragDepth = 0;
   dropOverlay.classList.add('hidden');
-  handleFiles(e.dataTransfer.files);
+  const files = Array.from(e.dataTransfer.files||[]);
+  const json = files.find(function(f){ return /\.json$/i.test(f.name); });
+  if(json){ readProjectFile(json); return; }
+  handleFiles(files);
 });
 
 /* =========================================================
-   PREVIEW RENDERING
+   VIDEO PREVIEW
    ========================================================= */
 let activeEl = null;
 
@@ -2601,39 +3062,54 @@ function setActiveSource(id, initialOpacity){
   }
   if(activeEl){
     activeEl.pause();
-    activeEl.classList.remove('active');
     activeEl.style.opacity = '0';
   }
   const src = state.sources[id];
-  if(!src){ state.activeSourceId = null; activeEl = null; return; }
-  /* ⚠ Set the correct fade opacity BEFORE marking it active / before any seek
-     starts, in the same synchronous tick — this prevents the unfaded source
-     frame from ever being painted, even for a single frame, during the seek. */
+  if(!src || !src.el){ state.activeSourceId = null; activeEl = null; return; }
+  /* Set the fade opacity BEFORE the seek starts, in the same synchronous
+     tick, so an unfaded frame is never painted even briefly. */
   src.el.style.opacity = opacityStr;
-  src.el.classList.add('active');
   state.activeSourceId = id;
   activeEl = src.el;
 }
-
-function activeSourceNone(){
+/* Detaches the moving-picture element without clearing the canvas, so a still
+   painted on the canvas stays visible. */
+function detachVideoEl(){
   if(activeEl){
-    activeEl.pause();
-    activeEl.classList.remove('active');
+    try{ activeEl.pause(); }catch(e){}
     activeEl.style.opacity = '0';
   }
   activeEl = null;
   state.activeSourceId = null;
+}
+function hideVideo(){
+  detachVideoEl();
   ctx2d.clearRect(0,0,canvas.width,canvas.height);
 }
-
+/* 'height' matches the frame height exactly (the default asked for: the still
+   fills the picture vertically); 'contain' keeps the whole image visible. */
+function drawImageToCanvas(ctx, img, w, h, fit, fadeVal){
+  ctx.fillStyle = '#000';
+  ctx.fillRect(0,0,w,h);
+  const iw = img.naturalWidth || img.width || w;
+  const ih = img.naturalHeight || img.height || h;
+  const scale = (fit === 'contain') ? Math.min(w/iw, h/ih) : (h/ih);
+  const dw = iw*scale, dh = ih*scale;
+  try{ ctx.drawImage(img, (w-dw)/2, (h-dh)/2, dw, dh); }catch(e){}
+  if(fadeVal < 0.999){
+    ctx.fillStyle = 'rgba(0,0,0,' + (1-fadeVal) + ')';
+    ctx.fillRect(0,0,w,h);
+  }
+}
+function paintImageClip(c, offset){
+  const src = state.sources[c.sourceId];
+  if(!src || !src.el){ ctx2d.clearRect(0,0,canvas.width,canvas.height); return; }
+  drawImageToCanvas(ctx2d, src.el, canvas.width, canvas.height, c.fit, fadeFactor(c, offset));
+}
 function seekSource(sourceId, time, cb, initialOpacity){
   setActiveSource(sourceId, initialOpacity);
   const v = (state.sources[sourceId]||{}).el;
   if(!v){ if(cb) cb(); return; }
-  function finishSeek(){
-    paintWhenReady(v);
-    if(cb) cb();
-  }
   function doSeek(){
     const target = Math.min(Math.max(time,0), (v.duration||time) || time);
     let settled = false;
@@ -2641,38 +3117,29 @@ function seekSource(sourceId, time, cb, initialOpacity){
       if(settled) return;
       settled = true;
       v.removeEventListener('seeked', onSeeked);
-      finishSeek();
+      paintWhenReady(v);
+      if(cb) cb();
     }
     v.addEventListener('seeked', onSeeked);
-    /* ⚠ Always assign currentTime — even if it looks like the same value —
-       so the browser actually (re)decodes and displays that frame. Skipping
-       the assignment when "already there" left the canvas/video blank in
-       many cases (first frame after import, repeated scrubs, etc). */
+    /* Always assign currentTime so the browser actually re-decodes and
+       displays that frame. */
     try{ v.currentTime = target; }
     catch(e){ onSeeked(); return; }
-    /* Safety net only: some browsers legitimately never fire 'seeked' for
-       a true no-op seek (target === current position to the millisecond).
-       If that happens, this timeout still lets playback/scrubbing proceed
-       instead of hanging forever — but the real seek above always runs
-       first, so this is a fallback, not the primary path. */
     setTimeout(function(){ if(!settled) onSeeked(); }, 900);
   }
   if(v.readyState>=1) doSeek();
   else v.addEventListener('loadedmetadata', doSeek, { once:true });
 }
-
 function drawFrame(v){
   const cw = canvas.width, ch = canvas.height;
   ctx2d.clearRect(0,0,cw,ch);
   const vw = v.videoWidth || 16, vh = v.videoHeight || 9;
   const scale = Math.min(cw/vw, ch/vh) || 1;
   const dw = vw*scale, dh = vh*scale;
-  const dx = (cw-dw)/2, dy = (ch-dh)/2;
-  try{ ctx2d.drawImage(v, dx, dy, dw, dh); }catch(e){}
-  const loc = locate(state.playhead);
+  try{ ctx2d.drawImage(v, (cw-dw)/2, (ch-dh)/2, dw, dh); }catch(e){}
+  const loc = videoAtClamped(state.playhead);
   if(loc){
-    const c = state.clips[loc.index];
-    const f = clipFadeFactor(c, loc.offset);
+    const f = fadeFactor(state.vclips[loc.index], loc.offset);
     if(f<0.999){
       ctx2d.fillStyle = 'rgba(0,0,0,'+(1-f)+')';
       ctx2d.fillRect(0,0,cw,ch);
@@ -2680,24 +3147,25 @@ function drawFrame(v){
   }
 }
 function paint(){
-  if(!activeEl){ ctx2d.clearRect(0,0,canvas.width,canvas.height); return; }
-  if(state.isPlaying){ ctx2d.clearRect(0,0,canvas.width,canvas.height); return; }
+  const loc = videoAtClamped(state.playhead);
+  if(loc){
+    const c = state.vclips[loc.index];
+    if(isImageClip(c)){ paintImageClip(c, loc.offset); return; }
+  }
+  if(!activeEl || state.isPlaying){ ctx2d.clearRect(0,0,canvas.width,canvas.height); return; }
   drawFrame(activeEl);
 }
 function paintWhenReady(v){
   paint();
-  if(v.requestVideoFrameCallback){
-    v.requestVideoFrameCallback(()=>paint());
-  } else {
-    setTimeout(()=>paint(), 60);
-  }
+  if(v.requestVideoFrameCallback) v.requestVideoFrameCallback(function(){ paint(); });
+  else setTimeout(paint, 60);
 }
 function seekPreview(t){
-  const loc = locate(t);
-  if(!loc){ activeSourceNone(); return; }
-  const c = state.clips[loc.index];
-  const f = clipFadeFactor(c, loc.offset);
-  seekSource(c.sourceId, c.in + loc.offset, null, f);
+  const loc = videoAtClamped(t);
+  if(!loc){ hideVideo(); return; }
+  const c = state.vclips[loc.index];
+  if(isImageClip(c)){ detachVideoEl(); paintImageClip(c, loc.offset); return; }
+  seekSource(c.sourceId, c.in + loc.offset, null, fadeFactor(c, loc.offset));
 }
 function resizeCanvas(){
   const rect = screenEl.getBoundingClientRect();
@@ -2707,183 +3175,276 @@ function resizeCanvas(){
 }
 
 /* =========================================================
-   AUDIO GRAPH
+   PLAYBACK ENGINE (wall clock master, V + A synced to it)
    ========================================================= */
-function ensureAudioGraph(){
-  if(!state.audio.ctx){
-    const AC = window.AudioContext || window.webkitAudioContext;
-    state.audio.ctx = new AC();
-    state.audio.gain = state.audio.ctx.createGain();
-    state.audio.gain.gain.value = 1;
-    state.audio.dest = state.audio.ctx.createMediaStreamDestination();
-    state.audio.gain.connect(state.audio.ctx.destination);
-    state.audio.gain.connect(state.audio.dest);
-  }
-  Object.values(state.sources).forEach(function(src){
-    if(!src.el._wired){
-      try{
-        const node = state.audio.ctx.createMediaElementSource(src.el);
-        node.connect(state.audio.gain);
-      }catch(e){ /* ignore */ }
-      src.el._wired = true;
-    }
-  });
-  if(state.audio.ctx.state === 'suspended') state.audio.ctx.resume();
-}
-function applyAudioLevel(level){
-  level = Math.max(0, Math.min(1 + VOLUME_BOOST_FACTOR, level));
-  if(state.audio.gain){
-    state.audio.gain.gain.value = level;
-    if(activeEl) activeEl.volume = 1;
-  } else if(activeEl){
-    activeEl.volume = Math.max(0, Math.min(1, level));
-  }
-}
+const clock = { wall:0, t:0 };
 
-/* =========================================================
-   PLAYBACK ENGINE
-   ========================================================= */
 function updatePlayIcon(){
-  if(state.isPlaying){
-    playIcon.innerHTML = '<path d="M7 5h4v14H7zM13 5h4v14h-4z"/>';
-  } else {
-    playIcon.innerHTML = '<path d="M8 5v14l11-7z"/>';
+  playIcon.innerHTML = state.isPlaying
+    ? '<path d="M7 5h4v14H7zM13 5h4v14h-4z"/>'
+    : '<path d="M8 5v14l11-7z"/>';
+}
+function togglePlay(){
+  if(state.isPlaying) pause();
+  else play().catch(function(e){ console.error(e); });
+}
+async function play(){
+  if(state.vclips.length===0 && state.aclips.length===0){ toast('재생할 클립이 없습니다.','warn'); return; }
+  const total = totalDuration();
+  if(state.playhead >= total-0.001) state.playhead = 0;
+  getCtx();
+  if(state.audio.ctx.state === 'suspended'){
+    try{ await state.audio.ctx.resume(); }catch(e){}
   }
-}
-
-function play(){
-  if(state.clips.length===0){ toast('재생할 클립이 없습니다.','warn'); return; }
-  if(state.playhead >= totalDuration()-0.001) state.playhead = 0;
-  ensureAudioGraph();
-  state.audio.ctx.resume();
-  const loc = locate(state.playhead);
-  if(!loc) return;
-  const c = state.clips[loc.index];
-  state.activeIdx = loc.index;
-  const srcTime = c.in + loc.offset;
-  const f0 = clipFadeFactor(c, loc.offset);
-  seekSource(c.sourceId, srcTime, function(){
-    const f = clipFadeFactor(c, loc.offset);
-    if(activeEl) activeEl.style.opacity = String(f);
-    applyAudioLevel(f * ((c.volume==null?1:c.volume)));
-    const p = activeEl ? activeEl.play() : Promise.resolve();
-    (p || Promise.resolve()).then(function(){
-      state.isPlaying = true;
-      updatePlayIcon();
-      paint();
-      requestAnimationFrame(tick);
-    }).catch(function(){ toast('재생을 시작할 수 없습니다.','error'); });
-  }, f0);
-}
-
-function pause(){
-  if(activeEl) activeEl.pause();
-  state.isPlaying = false;
+  state.isPlaying = true;
   updatePlayIcon();
-  const loc = locate(state.playhead);
-  if(loc){
-    const c = state.clips[loc.index];
-    const f = clipFadeFactor(c, loc.offset);
-    if(activeEl) activeEl.style.opacity = String(f);
-    applyAudioLevel(f*((c.volume==null?1:c.volume)));
-  } else {
-    applyAudioLevel(1);
-  }
-  paint();
-}
-
-function stopAtEnd(){
-  if(activeEl) activeEl.pause();
-  state.isPlaying = false;
-  updatePlayIcon();
-  applyAudioLevel(1);
-  paint();
-  updatePlayheadUI();
-}
-
-function tick(){
+  const startAt = state.playhead;
+  /* Sound first: a freshly split clip has a brand new element that cannot be
+     seeked until its metadata is in. */
+  await primeAudioAt(startAt, 800);
   if(!state.isPlaying) return;
-  const c = state.clips[state.activeIdx];
-  if(!c){ stopAtEnd(); return; }
-  const v = activeEl;
-  if(!v){ stopAtEnd(); return; }
-  const offset = v.currentTime - c.in;
 
-  if(v.currentTime >= c.out - 0.04 || v.ended){
-    advanceClip();
-    if(state.isPlaying) requestAnimationFrame(tick);
+  const loc = videoAt(startAt);
+  if(loc && isImageClip(state.vclips[loc.index])){
+    detachVideoEl();
+    paintImageClip(state.vclips[loc.index], loc.offset);
+    clock.wall = performance.now(); clock.t = startAt;
+    requestAnimationFrame(tick);
     return;
   }
-
-  state.playhead = clipStart(state.activeIdx) + offset;
-  updatePlayheadUI();
-  const f = clipFadeFactor(c, offset);
-  v.style.opacity = String(f);
-  applyAudioLevel(f * ((c.volume==null?1:c.volume)));
-  requestAnimationFrame(tick);
+  if(loc){
+    const c = state.vclips[loc.index];
+    seekSource(c.sourceId, c.in + loc.offset, function(){
+      if(!state.isPlaying) return;
+      clock.wall = performance.now(); clock.t = startAt;
+      if(activeEl) activeEl.play().catch(function(){});
+      requestAnimationFrame(tick);
+    }, fadeFactor(c, loc.offset));
+  } else {
+    hideVideo();
+    clock.wall = performance.now(); clock.t = startAt;
+    requestAnimationFrame(tick);
+  }
 }
-
-function advanceClip(){
-  const cur = state.clips[state.activeIdx];
-  const nextIdx = state.activeIdx + 1;
-  if(nextIdx >= state.clips.length){
-    state.playhead = totalDuration();
+function pause(){
+  state.isPlaying = false;
+  updatePlayIcon();
+  if(activeEl){ try{ activeEl.pause(); }catch(e){} }
+  silenceAudio();
+  seekPreview(state.playhead);
+  updatePlayheadUI();
+}
+function stopAtEnd(){
+  state.isPlaying = false;
+  updatePlayIcon();
+  if(activeEl){ try{ activeEl.pause(); }catch(e){} }
+  silenceAudio();
+  seekPreview(state.playhead);
+  updatePlayheadUI();
+}
+function tick(){
+  if(!state.isPlaying) return;
+  const total = totalDuration();
+  const t = clock.t + (performance.now() - clock.wall)/1000;
+  if(t >= total){
+    state.playhead = total;
     stopAtEnd();
     return;
   }
-  const next = state.clips[nextIdx];
-  state.activeIdx = nextIdx;
-  state.playhead = clipStart(nextIdx);
+  state.playhead = t;
+  syncVideo(t);
+  syncAudio(t);
   updatePlayheadUI();
-
-  const continuous = next.sourceId === cur.sourceId && Math.abs(next.in - cur.out) < 0.06;
-  if(continuous){
-    const v = activeEl;
-    const f = clipFadeFactor(next, 0);
-    if(v) v.style.opacity = String(f);
-    applyAudioLevel(f * ((next.volume==null?1:next.volume)));
-  } else {
-    const f0 = clipFadeFactor(next, 0);
-    seekSource(next.sourceId, next.in, function(){
-      const f = clipFadeFactor(next, 0);
-      if(activeEl) activeEl.style.opacity = String(f);
-      applyAudioLevel(f * ((next.volume==null?1:next.volume)));
-      if(activeEl) activeEl.play().catch(function(){});
-    }, f0);
+  requestAnimationFrame(tick);
+}
+function syncVideo(t){
+  const loc = videoAt(t);
+  if(!loc){
+    if(activeEl){ try{ activeEl.pause(); }catch(e){} activeEl.style.opacity = '0'; }
+    ctx2d.clearRect(0,0,canvas.width,canvas.height);
+    return;
   }
+  const c = state.vclips[loc.index];
+  if(isImageClip(c)){
+    detachVideoEl();
+    paintImageClip(c, loc.offset);
+    return;
+  }
+  const want = c.in + loc.offset;
+  if(state.activeSourceId !== c.sourceId){
+    seekSource(c.sourceId, want, function(){
+      if(state.isPlaying && activeEl) activeEl.play().catch(function(){});
+    }, fadeFactor(c, loc.offset));
+    return;
+  }
+  const v = activeEl;
+  if(!v) return;
+  /* Both the wall clock and the element run at 1x, so this only corrects
+     real drift (clip switches inside one source, seeks, stalls). */
+  if(Math.abs(v.currentTime - want) > 0.28){
+    try{ v.currentTime = want; }catch(e){}
+  }
+  if(v.paused){ v.play().catch(function(){}); }
+  v.style.opacity = String(fadeFactor(c, loc.offset));
 }
 
 /* =========================================================
-   TIMELINE UI
+   TIMELINE RENDERING
    ========================================================= */
 function computeMinPxPerSec(){
   const areaWidth = Math.max(100, tlScroll.clientWidth - LABEL_WIDTH);
   return Math.min(30, Math.max(0.2, areaWidth/600));
 }
+/* Zooms around an anchor so the frame under the cursor/playhead stays put. */
+function setZoom(px, anchorTime, anchorScreenX){
+  const nv = clamp(px, state.minPxPerSec, MAX_ZOOM);
+  if(Math.abs(nv - state.pxPerSec) < 1e-9){ zoomSlider.value = String(nv); return; }
+  state.pxPerSec = nv;
+  zoomSlider.value = String(nv);
+  renderTimeline();
+  if(anchorTime != null){
+    tlScroll.scrollLeft = Math.max(0, LABEL_WIDTH + anchorTime*nv - anchorScreenX);
+  }
+  updatePlayheadUI(true);
+}
+function zoomAnchor(){
+  const phX = LABEL_WIDTH + state.playhead*state.pxPerSec - tlScroll.scrollLeft;
+  if(phX > LABEL_WIDTH && phX < tlScroll.clientWidth) return { t: state.playhead, x: phX };
+  const cx = tlScroll.clientWidth/2;
+  return { t: (tlScroll.scrollLeft + cx - LABEL_WIDTH)/state.pxPerSec, x: cx };
+}
 function recomputeZoomBounds(){
   const min = computeMinPxPerSec();
   state.minPxPerSec = min;
   zoomSlider.min = String(min);
-  zoomSlider.max = '30';
+  zoomSlider.max = String(MAX_ZOOM);
   if(state.pxPerSec < min) state.pxPerSec = min;
   zoomSlider.value = String(state.pxPerSec);
 }
-function pickTickStep(pxPerSec){
-  const candidates = [1,2,5,10,20,30,60];
-  for(const s of candidates){ if(s*pxPerSec >= 55) return s; }
-  return 60;
+function pickTickStep(pxPerSec, spanSeconds){
+  const candidates = [1,2,5,10,20,30,60,120,300,600,1200,1800];
+  for(const s of candidates){
+    if(s*pxPerSec >= 55 && (spanSeconds/s) <= MAX_TICKS) return s;
+  }
+  return candidates[candidates.length-1];
 }
-
-function updatePlayheadUI(){
+function hexToRgba(hex, a){
+  const h = (hex||'#666666').replace('#','');
+  const r = parseInt(h.substring(0,2),16), g = parseInt(h.substring(2,4),16), b = parseInt(h.substring(4,6),16);
+  return 'rgba('+r+','+g+','+b+','+a+')';
+}
+function updatePlayheadUI(noScroll){
   timecodeEl.innerHTML = fmtTime(state.playhead) + '<span class="sep">/</span>' + fmtTime(totalDuration());
   const x = LABEL_WIDTH + state.playhead*state.pxPerSec;
   playheadLine.style.left = x + 'px';
+  if(noScroll) return;
   const scrollLeft = tlScroll.scrollLeft;
   const viewW = tlScroll.clientWidth;
   if(x < scrollLeft + LABEL_WIDTH + 10) tlScroll.scrollLeft = Math.max(0, x - LABEL_WIDTH - 10);
   else if(x > scrollLeft + viewW - 10) tlScroll.scrollLeft = x - viewW + 10;
 }
+/* Peak amplitude per pixel column for the clip's [in, out] slice.
+   Split out from drawing so the index math can be verified directly. */
+function waveColumns(src, c, cw){
+  cw = Math.max(1, Math.round(cw));
+  const out = new Float32Array(cw);
+  if(!src || !src.peaks || !src.peaks.length) return out;
+  const peaks = src.peaks, n = peaks.length;
+  const sd = src.duration || 1;
+  const i0 = clamp(Math.floor((c.in/sd)*n), 0, n-1);
+  const i1 = clamp(Math.ceil((c.out/sd)*n), i0+1, n);
+  const span = Math.max(1, i1 - i0);
+  for(let x=0; x<cw; x++){
+    const a = i0 + Math.floor(span * x / cw);
+    /* i0 must be added exactly once. Adding it to an index that already
+       includes it made every trimmed/split clip read past its own range and
+       render as a solid block. */
+    let b = Math.max(a + 1, i0 + Math.floor(span * (x+1) / cw));
+    if(b > i1) b = i1;
+    let m = 0;
+    for(let k=a; k<b && k<n; k++){ if(peaks[k] > m) m = peaks[k]; }
+    out[x] = m;
+  }
+  return out;
+}
+function drawWave(cv, src, c, w, h){
+  const cw = Math.max(1, Math.min(8000, Math.round(w)));
+  cv.width = cw; cv.height = h;
+  const g = cv.getContext('2d');
+  g.clearRect(0,0,cw,h);
+  g.fillStyle = '#ffffff';
+  if(!src || !src.peaks){
+    g.globalAlpha = 0.25;
+    g.fillRect(0, h/2-1, cw, 2);
+    return;
+  }
+  const cols = waveColumns(src, c, cw);
+  for(let x=0; x<cw; x++){
+    const hh = Math.max(0.7, cols[x] * h * 0.44);
+    g.fillRect(x, h/2-hh, 1, hh*2);
+  }
+}
+function videoBadgeHtml(c){
+  if(!isImageClip(c)) return '';
+  return '<div class="badge">이미지 · ' + (c.fit === 'contain' ? '전체' : '높이') + '</div>';
+}
+function audioBadgeHtml(c){
+  let badges = '';
+  if(c.mute){
+    badges += '<div class="badge mute">음소거</div>';
+  } else {
+    const vol = c.volume==null?1:c.volume;
+    if(Math.abs(vol-1)>0.001){
+      const pct = volumeToPct(vol);
+      badges += '<div class="badge"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M4 9v6h4l5 5V4L8 9H4z"/></svg>'+(pct>0?'+':'')+pct+'%</div>';
+    }
+  }
+  if(c.linked && c.linkId) badges += '<div class="badge link">링크</div>';
+  return badges;
+}
+/* Updates one clip's badge in place — avoids rebuilding every clip (and every
+   waveform canvas) on each slider step, which is what made dragging feel
+   sticky and could drop the drag entirely. */
+function refreshClipBadge(c){
+  const box = atrackEl(aTrackOf(c)).querySelector('.clip[data-id="'+c.id+'"] .clip-badges');
+  if(box) box.innerHTML = audioBadgeHtml(c);
+}
+function buildClipEl(c, track, left, width, height){
+  const src = state.sources[c.sourceId];
+  const el = document.createElement('div');
+  const isSel = state.selected && state.selected.track===track && state.selected.id===c.id;
+  el.className = 'clip ' + (track==='V'?'v':'a') + (isSel ? ' selected':'');
+  el.style.left = left + 'px';
+  el.style.width = Math.max(4, width) + 'px';
+  el.style.background = hexToRgba(src?src.color:'#666', track==='V' ? 0.35 : 0.28);
+  el.style.borderLeft = '3px solid ' + (src ? src.color : '#666');
+  el.dataset.id = c.id;
+  el.dataset.track = track;
 
+  let html = '';
+  if(track==='A'){
+    html += '<canvas class="wave-canvas"></canvas>';
+  } else {
+    html += '<div class="clip-thumb" style="background-image:url(\''+(src?(src.thumb||''):'')+'\')"></div>';
+  }
+  html += '<div class="clip-info"><div class="clip-name">'+escapeHtml(src?src.name:'?')+'</div>'+
+          '<div class="clip-dur">'+fmtTime(clipDur(c))+'</div></div>';
+  if(c.fadeIn>0) html += '<div class="fade fade-in" style="width:'+Math.min(width, c.fadeIn*state.pxPerSec)+'px"></div>';
+  if(c.fadeOut>0) html += '<div class="fade fade-out" style="width:'+Math.min(width, c.fadeOut*state.pxPerSec)+'px"></div>';
+
+  html += '<div class="clip-badges">' + (track==='A' ? audioBadgeHtml(c) : videoBadgeHtml(c)) + '</div>';
+  html += '<div class="trim l"></div><div class="trim r"></div>';
+  el.innerHTML = html;
+
+  if(track==='A'){
+    const cv = el.querySelector('.wave-canvas');
+    drawWave(cv, src, c, Math.max(4,width), height);
+  }
+  el.querySelector('.trim.l').addEventListener('mousedown', function(e){ startTrim(e, c, track, 'l'); });
+  el.querySelector('.trim.r').addEventListener('mousedown', function(e){ startTrim(e, c, track, 'r'); });
+  attachClipDrag(el, c, track);
+  return el;
+}
 function renderTimeline(){
   recomputeZoomBounds();
   const dur = totalDuration();
@@ -2891,11 +3452,13 @@ function renderTimeline(){
   const contentWidth = Math.max(dur*state.pxPerSec, areaWidth);
   tlContent.style.width = (LABEL_WIDTH + contentWidth) + 'px';
   ruler.style.width = contentWidth + 'px';
-  track.style.width = contentWidth + 'px';
+  vtrack.style.width = contentWidth + 'px';
+  atrack1.style.width = contentWidth + 'px';
+  atrack2.style.width = contentWidth + 'px';
 
   ruler.innerHTML = '';
-  const step = pickTickStep(state.pxPerSec);
   const rulerDur = Math.max(dur, contentWidth/state.pxPerSec);
+  const step = pickTickStep(state.pxPerSec, rulerDur);
   for(let t=0; t<=rulerDur+0.0001; t+=step){
     const tickEl = document.createElement('div');
     tickEl.className = 'tick';
@@ -2904,78 +3467,148 @@ function renderTimeline(){
     ruler.appendChild(tickEl);
   }
 
-  track.innerHTML = '';
-  for(let t=0; t<=rulerDur+0.0001; t+=step){
-    const gl = document.createElement('div');
+  [vtrack, atrack1, atrack2].forEach(function(tr){
+    const hint = tr.querySelector('.track-hint');
+    tr.innerHTML = '';
+    if(hint) tr.appendChild(hint);
     const majorEvery = step*5;
-    const isMajor = Math.abs((t/majorEvery) - Math.round(t/majorEvery)) < 0.001;
-    gl.className = 'grid-line' + (isMajor ? ' major' : '');
-    gl.style.left = (t*state.pxPerSec) + 'px';
-    track.appendChild(gl);
-  }
-  let x = 0;
-  state.clips.forEach(function(c, i){
-    const src = state.sources[c.sourceId];
-    const w = clipDur(c) * state.pxPerSec;
-    const el = document.createElement('div');
-    el.className = 'clip' + (c.id===state.selectedId ? ' selected':'');
-    el.style.left = x + 'px';
-    el.style.width = Math.max(3, w) + 'px';
-    el.style.background = src ? hexToRgba(src.color,0.35) : '#333';
-    el.style.borderLeft = '3px solid ' + (src ? src.color : '#666');
-    el.dataset.id = c.id;
-
-    let html = '<div class="clip-thumb" style="background-image:url(\''+(src?src.thumb:'')+'\')"></div>'+
-      '<div class="clip-info"><div class="clip-name">'+escapeHtml(src?src.name:'?')+'</div>'+
-      '<div class="clip-dur">'+fmtTime(clipDur(c))+'</div></div>';
-    if(c.fadeIn>0) html += '<div class="fade fade-in" style="width:'+(c.fadeIn*state.pxPerSec)+'px"></div>';
-    if(c.fadeOut>0) html += '<div class="fade fade-out" style="width:'+(c.fadeOut*state.pxPerSec)+'px"></div>';
-    const vol = c.volume==null?1:c.volume;
-    if(Math.abs(vol-1)>0.001){
-      const pct = volumeToPct(vol);
-      html += '<div class="clip-vol-badge"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M4 9v6h4l5 5V4L8 9H4z"/></svg>'+(pct>0?'+':'')+pct+'%</div>';
+    for(let t=0; t<=rulerDur+0.0001; t+=step){
+      const gl = document.createElement('div');
+      const isMajor = Math.abs((t/majorEvery) - Math.round(t/majorEvery)) < 0.001;
+      gl.className = 'grid-line' + (isMajor ? ' major' : '');
+      gl.style.left = (t*state.pxPerSec) + 'px';
+      tr.appendChild(gl);
     }
-    el.innerHTML = html;
-
-    el.addEventListener('click', function(e){ e.stopPropagation(); selectClip(c.id); });
-    attachClipDrag(el, c, i);
-    track.appendChild(el);
-    x += w;
   });
 
-  clipCountEl.textContent = state.clips.length + '개 클립';
-  playheadLine.style.left = (LABEL_WIDTH + state.playhead*state.pxPerSec) + 'px';
-  updateVolumeUI();
-}
-function hexToRgba(hex, a){
-  const h = hex.replace('#','');
-  const r = parseInt(h.substring(0,2),16), g = parseInt(h.substring(2,4),16), b = parseInt(h.substring(4,6),16);
-  return 'rgba('+r+','+g+','+b+','+a+')';
-}
+  let x = 0;
+  state.vclips.forEach(function(c){
+    const w = clipDur(c)*state.pxPerSec;
+    vtrack.appendChild(buildClipEl(c, 'V', x, w, 70));
+    x += w;
+  });
+  state.aclips.forEach(function(c){
+    const w = clipDur(c)*state.pxPerSec;
+    atrackEl(aTrackOf(c)).appendChild(buildClipEl(c, 'A', c.start*state.pxPerSec, w, 52));
+  });
 
-function selectClip(id){
-  state.selectedId = id;
+  vHint.classList.toggle('hidden', state.vclips.length>0);
+  aHint1.classList.toggle('hidden', state.aclips.some(function(c){ return aTrackOf(c)===1; }));
+  aHint2.classList.toggle('hidden', state.aclips.some(function(c){ return aTrackOf(c)===2; }));
+  clipCountEl.textContent = 'V ' + state.vclips.length + ' / A ' + state.aclips.length;
+  playheadLine.style.left = (LABEL_WIDTH + state.playhead*state.pxPerSec) + 'px';
+  updateSelectionUI();
+}
+function selectClip(track, id){
+  state.selected = { track, id };
   renderTimeline();
 }
+function updateSelectionUI(){
+  const sel = selectedClip();
+  const src = sel ? state.sources[sel.clip.sourceId] : null;
+  selLabel.textContent = sel
+    ? ('[' + (sel.track==='V' ? 'V1' : 'A'+aTrackOf(sel.clip)) + '] ' + (src?src.name:''))
+    : '';
+  let linkTarget = null;
+  if(sel) linkTarget = (sel.track==='A') ? sel.clip
+        : state.aclips.find(function(c){ return c.linkId===sel.clip.linkId; }) || null;
+  linkLabel.textContent = (linkTarget && linkTarget.linked) ? '링크 해제' : '링크 연결';
+  updateVolumeUI();
+  updateImageUI();
+}
+/* Length / fit controls act on the selected still, or the still under the
+   playhead when nothing is selected. */
+function imageTargetClip(){
+  const sel = selectedClip();
+  if(sel && sel.track==='V' && isImageClip(sel.clip)) return sel.clip;
+  const loc = videoAt(state.playhead);
+  if(loc && isImageClip(state.vclips[loc.index])) return state.vclips[loc.index];
+  return null;
+}
+function updateImageUI(){
+  const c = imageTargetClip();
+  imgDurInput.disabled = !c;
+  btnImgFit.disabled = !c;
+  btnImgFit.textContent = (c && c.fit === 'contain') ? '전체 보이기' : '높이 맞춤';
+  if(c && document.activeElement !== imgDurInput){
+    imgDurInput.value = String(Math.round(clipDur(c)*10)/10);
+  }
+}
+let imgDurEditing = false;
+function setImageDuration(c, seconds){
+  const v = clamp(seconds, MIN_CLIP, IMAGE_MAX_DUR);
+  c.in = 0;
+  c.out = v;
+  const d = clipDur(c);
+  c.fadeIn = Math.min(c.fadeIn||0, d);
+  c.fadeOut = Math.min(c.fadeOut||0, Math.max(0, d - (c.fadeIn||0)));
+  return v;
+}
+imgDurInput.addEventListener('input', function(){
+  const v = parseFloat(imgDurInput.value);
+  if(isNaN(v)) return;
+  const c = imageTargetClip();
+  if(!c){ toast('길이를 조절할 이미지 클립을 선택하세요.','warn'); return; }
+  if(!imgDurEditing){ pushHistory(); imgDurEditing = true; }
+  setImageDuration(c, v);
+  afterChange();
+});
+imgDurInput.addEventListener('change', function(){ imgDurEditing = false; updateImageUI(); });
+imgDurInput.addEventListener('blur', function(){ imgDurEditing = false; updateImageUI(); });
+imgDurInput.addEventListener('keydown', function(e){ if(e.key==='Enter'){ e.preventDefault(); imgDurInput.blur(); } });
+btnImgFit.addEventListener('click', function(){
+  const c = imageTargetClip();
+  if(!c){ toast('이미지 클립을 먼저 선택하세요.','warn'); return; }
+  pushHistory();
+  c.fit = (c.fit === 'contain') ? 'height' : 'contain';
+  afterChange();
+  toast(c.fit === 'contain' ? '이미지 전체가 보이도록 넣습니다.' : '이미지를 영상 높이에 맞춥니다.','info');
+});
 
-/* ---- scrubbing on ruler / empty track ---- */
-function xToTime(clientX){
-  const rect = track.getBoundingClientRect();
-  const x = clientX - rect.left;
-  return Math.max(0, Math.min(totalDuration(), x/state.pxPerSec));
+/* Volume always acts on a sound clip. If a picture clip is selected, its
+   linked sound clip is used. */
+function volumeTargetClip(){
+  const sel = selectedClip();
+  if(sel){
+    if(sel.track==='A') return sel.clip;
+    if(sel.clip.linkId){
+      const linked = state.aclips.find(function(c){ return c.linkId===sel.clip.linkId; });
+      if(linked) return linked;
+    }
+  }
+  /* Fall back to whatever sits under the playhead (A1 first), then to the
+     only sound clip in the project if there is just one. */
+  const at = audioAt(state.playhead);
+  if(at.length){
+    at.sort(function(a,b){ return aTrackOf(a)-aTrackOf(b); });
+    return at[0];
+  }
+  if(state.aclips.length === 1) return state.aclips[0];
+  return null;
+}
+
+/* =========================================================
+   SCRUBBING
+   ========================================================= */
+function xToTime(clientX, trackEl){
+  const rect = trackEl.getBoundingClientRect();
+  return Math.max(0, Math.min(totalDuration(), (clientX-rect.left)/state.pxPerSec));
 }
 function scrubTo(clientX){
-  const t = xToTime(clientX);
-  state.playhead = t;
+  const t = xToTime(clientX, vtrack);
   if(state.isPlaying) pause();
+  state.playhead = t;
   seekPreview(t);
   updatePlayheadUI();
+  updateSelectionUI();
 }
-[ruler, track].forEach(function(elm){
+[ruler, vtrack, atrack1, atrack2].forEach(function(elm){
   elm.addEventListener('mousedown', function(e){
     if(e.target.closest('.clip')) return;
     if(e.target === playheadLine) return;
+    if(elm !== ruler) state.selected = null;
     scrubTo(e.clientX);
+    if(elm !== ruler) renderTimeline();
     function move(ev){ scrubTo(ev.clientX); }
     function up(){ window.removeEventListener('mousemove', move); window.removeEventListener('mouseup', up); }
     window.addEventListener('mousemove', move);
@@ -2990,267 +3623,480 @@ playheadLine.addEventListener('mousedown', function(e){
   window.addEventListener('mouseup', up);
 });
 
-/* ---- clip drag reorder ---- */
+/* =========================================================
+   CLIP DRAG — V1 reorders, A1 moves freely in time
+   ========================================================= */
 function computeInsertIndex(clientX){
-  const rect = track.getBoundingClientRect();
+  const rect = vtrack.getBoundingClientRect();
   const x = clientX - rect.left;
   let acc = 0;
-  for(let k=0;k<state.clips.length;k++){
-    const w = clipDur(state.clips[k]) * state.pxPerSec;
+  for(let k=0;k<state.vclips.length;k++){
+    const w = clipDur(state.vclips[k]) * state.pxPerSec;
     if(x < acc + w/2) return k;
     acc += w;
   }
-  return state.clips.length;
+  return state.vclips.length;
 }
 function positionInsertMarker(idx){
   let x = 0;
-  for(let k=0;k<idx;k++) x += clipDur(state.clips[k]) * state.pxPerSec;
+  for(let k=0;k<idx;k++) x += clipDur(state.vclips[k]) * state.pxPerSec;
   insertMarker.style.left = (LABEL_WIDTH + x) + 'px';
+  insertMarker.style.top = '26px';
+  insertMarker.style.height = '82px';
   insertMarker.classList.remove('hidden');
 }
-function hideInsertMarker(){ insertMarker.classList.add('hidden'); }
-
-function attachClipDrag(el, c){
+function snapPoints(excludeId){
+  const pts = [0, state.playhead];
+  let x = 0;
+  state.vclips.forEach(function(c){ pts.push(x); x += clipDur(c); pts.push(x); });
+  state.aclips.forEach(function(c){
+    if(c.id===excludeId) return;
+    pts.push(c.start); pts.push(aEnd(c));
+  });
+  return pts;
+}
+function applySnap(value, pts, tolPx){
+  const tol = tolPx / state.pxPerSec;
+  let best = null, bestD = Infinity;
+  pts.forEach(function(p){
+    const d = Math.abs(p-value);
+    if(d < tol && d < bestD){ bestD = d; best = p; }
+  });
+  return best;
+}
+function attachClipDrag(el, c, track){
   el.addEventListener('mousedown', function(e){
     if(e.button !== 0) return;
+    if(e.target.classList.contains('trim')) return;
     e.stopPropagation();
     const startX = e.clientX;
     let moved = false;
     let liveEl = el;
-    let insertIndex = state.clips.findIndex(function(cc){ return cc.id===c.id; });
-    selectClip(c.id);
+    let insertIndex = track==='V' ? state.vclips.indexOf(c) : 0;
+    const startTime = c.start || 0;
+    const pts = snapPoints(c.id);
+    selectClip(track, c.id);
+    const startTrackNum = aTrackOf(c);
+    liveEl = (track==='V'?vtrack:atrackEl(startTrackNum)).querySelector('.clip[data-id="'+c.id+'"]') || el;
 
     function onMove(ev){
       const dx = ev.clientX - startX;
       if(!moved && Math.abs(dx) < 4) return;
       if(!moved){
         moved = true;
-        renderTimeline();
-        liveEl = track.querySelector('.clip[data-id="'+c.id+'"]');
-        if(liveEl) liveEl.classList.add('dragging');
+        pushHistory();
+        liveEl.classList.add('dragging');
       }
-      if(liveEl) liveEl.style.transform = 'translateX('+dx+'px)';
-      insertIndex = computeInsertIndex(ev.clientX);
-      positionInsertMarker(insertIndex);
+      if(track==='V'){
+        liveEl.style.transform = 'translateX('+dx+'px)';
+        insertIndex = computeInsertIndex(ev.clientX);
+        positionInsertMarker(insertIndex);
+      } else {
+        let ns = Math.max(0, startTime + dx/state.pxPerSec);
+        const snapS = applySnap(ns, pts, 8);
+        const snapE = applySnap(ns + clipDur(c), pts, 8);
+        if(snapS!=null) ns = snapS;
+        else if(snapE!=null) ns = Math.max(0, snapE - clipDur(c));
+        if(snapS!=null || snapE!=null){
+          snapMarker.style.left = (LABEL_WIDTH + (snapS!=null?snapS:snapE)*state.pxPerSec) + 'px';
+          snapMarker.style.top = '26px';
+          snapMarker.style.height = '210px';
+          snapMarker.classList.remove('hidden');
+        } else snapMarker.classList.add('hidden');
+        c.start = ns;
+        if(c.linked) c.linked = false;
+        liveEl.style.left = (ns*state.pxPerSec)+'px';
+        /* Vertical drag moves the clip to the other sound channel. */
+        const r1 = atrack1.getBoundingClientRect();
+        const want = (ev.clientY > r1.bottom) ? 2 : 1;
+        if(want !== aTrackOf(c)){
+          c.track = want;
+          atrackEl(want).appendChild(liveEl);
+        }
+      }
     }
     function onUp(){
       window.removeEventListener('mousemove', onMove);
       window.removeEventListener('mouseup', onUp);
-      if(moved){
-        if(liveEl){ liveEl.classList.remove('dragging'); liveEl.style.transform=''; }
-        hideInsertMarker();
-        moveClip(c.id, insertIndex);
-      }
+      insertMarker.classList.add('hidden');
+      snapMarker.classList.add('hidden');
+      if(!moved) return;
+      liveEl.classList.remove('dragging');
+      liveEl.style.transform = '';
+      if(track==='V') moveVideoClip(c.id, insertIndex);
+      else afterChange();
     }
     window.addEventListener('mousemove', onMove);
     window.addEventListener('mouseup', onUp);
   });
 }
-function moveClip(id, insertIndex){
-  const from = state.clips.findIndex(function(c){ return c.id===id; });
+function moveVideoClip(id, insertIndex){
+  const from = state.vclips.findIndex(function(c){ return c.id===id; });
   if(from<0) return;
   let idx = insertIndex;
   if(from < idx) idx -= 1;
-  idx = Math.max(0, Math.min(state.clips.length-1, idx));
-  if(idx === from) return;
-  pushHistory();
-  const item = state.clips.splice(from,1)[0];
-  state.clips.splice(idx,0,item);
+  idx = clamp(idx, 0, state.vclips.length-1);
+  if(idx === from){ renderTimeline(); return; }
+  const item = state.vclips.splice(from,1)[0];
+  state.vclips.splice(idx,0,item);
   afterChange();
+}
+
+/* ---- trim handles ---- */
+function startTrim(e, c, track, side){
+  if(e.button !== 0) return;
+  e.stopPropagation();
+  e.preventDefault();
+  selectClip(track, c.id);
+  const src = state.sources[c.sourceId];
+  const srcDur = sourceMaxDur(src);
+  const isStill = isImageSrc(src);
+  const startX = e.clientX;
+  const in0 = c.in, out0 = c.out, start0 = c.start||0;
+  let pushed = false;
+
+  function onMove(ev){
+    const dt = (ev.clientX - startX)/state.pxPerSec;
+    if(!pushed && Math.abs(ev.clientX-startX) >= 3){ pushHistory(); pushed = true; }
+    if(!pushed) return;
+    if(isStill){
+      /* A still has no in-point: both handles simply change its length. */
+      c.in = 0;
+      c.out = clamp(side==='l' ? (out0 - dt) : (out0 + dt), MIN_CLIP, IMAGE_MAX_DUR);
+    } else if(side==='l'){
+      const ni = clamp(in0 + dt, 0, out0 - MIN_CLIP);
+      c.in = ni;
+      if(track==='A'){ c.start = Math.max(0, start0 + (ni - in0)); c.linked = false; }
+    } else {
+      c.out = clamp(out0 + dt, c.in + MIN_CLIP, srcDur);
+    }
+    const d = clipDur(c);
+    c.fadeIn = Math.min(c.fadeIn||0, d);
+    c.fadeOut = Math.min(c.fadeOut||0, Math.max(0, d - (c.fadeIn||0)));
+    if(track==='V') syncLinks();
+    renderTimeline();
+    updatePlayheadUI();
+  }
+  function onUp(){
+    window.removeEventListener('mousemove', onMove);
+    window.removeEventListener('mouseup', onUp);
+    if(pushed) afterChange();
+  }
+  window.addEventListener('mousemove', onMove);
+  window.addEventListener('mouseup', onUp);
+}
+
+/* =========================================================
+   LINKING (picture clip <-> its sound clip)
+   ========================================================= */
+function syncLinks(){
+  state.aclips.forEach(function(a){
+    if(!a.linked || !a.linkId) return;
+    const v = state.vclips.find(function(c){ return c.linkId===a.linkId; });
+    if(!v){ a.linked = false; return; }
+    a.start = vStartOfClip(v);
+    a.in = v.in;
+    a.out = v.out;
+    const d = clipDur(a);
+    a.fadeIn = Math.min(a.fadeIn||0, d);
+    a.fadeOut = Math.min(a.fadeOut||0, Math.max(0, d-(a.fadeIn||0)));
+  });
+}
+function linkedAudioOf(v){
+  if(!v.linkId) return null;
+  return state.aclips.find(function(c){ return c.linkId===v.linkId && c.linked; }) || null;
+}
+function toggleLink(){
+  const sel = selectedClip();
+  if(!sel){ toast('클립을 먼저 선택하세요.','warn'); return; }
+  let a = null;
+  if(sel.track==='A') a = sel.clip;
+  else a = state.aclips.find(function(c){ return c.linkId===sel.clip.linkId; });
+  if(!a || !a.linkId){ toast('이 클립에는 연결된 소리 클립이 없습니다.','warn'); return; }
+  const v = state.vclips.find(function(c){ return c.linkId===a.linkId; });
+  if(!v){ toast('연결할 영상 클립이 없습니다.','warn'); return; }
+  pushHistory();
+  a.linked = !a.linked;
+  afterChange();
+  toast(a.linked ? '영상과 소리를 다시 연결했습니다.' : '영상과 소리의 링크를 해제했습니다. 이제 소리를 따로 옮길 수 있습니다.','info');
 }
 
 /* =========================================================
    EDIT OPERATIONS
    ========================================================= */
-function currentClipIdAtPlayhead(){
-  const loc = locate(state.playhead);
-  return loc ? state.clips[loc.index].id : null;
+/* Returns the clip the operation should act on: the selection when the
+   playhead is inside it, otherwise whatever sits under the playhead. */
+function opTarget(requireInside){
+  const sel = selectedClip();
+  if(sel){
+    const s = sel.track==='V' ? vStartOfClip(sel.clip) : sel.clip.start;
+    const inside = state.playhead > s && state.playhead < s + clipDur(sel.clip);
+    if(!requireInside || inside) return sel;
+  }
+  const loc = videoAt(state.playhead);
+  if(loc) return { track:'V', clip: state.vclips[loc.index] };
+  const at = audioAt(state.playhead);
+  if(at.length) return { track:'A', clip: at[0] };
+  return null;
 }
-function targetClip(){
-  const id = state.selectedId || currentClipIdAtPlayhead();
-  return state.clips.find(function(c){ return c.id===id; }) || null;
-}
+function clipTimelineStart(track, c){ return track==='V' ? vStartOfClip(c) : c.start; }
 
 function splitAtPlayhead(){
-  const loc = locate(state.playhead);
-  if(!loc){ toast('분할할 클립이 없습니다.','warn'); return; }
-  const c = state.clips[loc.index];
-  const dur = clipDur(c);
-  const EPS = 0.08;
-  if(loc.offset < EPS || loc.offset > dur - EPS){
-    toast('클립 경계에 너무 가깝습니다.','warn');
-    return;
-  }
+  const target = opTarget(true);
+  if(!target){ toast('재생헤드 위치에 분할할 클립이 없습니다.','warn'); return; }
+  const { track, clip } = target;
+  const s = clipTimelineStart(track, clip);
+  const offset = state.playhead - s;
+  const d = clipDur(clip);
+  if(offset < MIN_CLIP || offset > d - MIN_CLIP){ toast('클립 경계에 너무 가깝습니다.','warn'); return; }
   pushHistory();
-  const splitSrc = c.in + loc.offset;
-  const left = Object.assign({}, c, { id: uid('clip'), out: splitSrc, fadeOut: 0 });
-  const right = Object.assign({}, c, { id: uid('clip'), in: splitSrc, fadeIn: 0 });
-  state.clips.splice(loc.index, 1, left, right);
-  state.selectedId = right.id;
+  const splitSrc = clip.in + offset;
+
+  if(track==='V'){
+    const idx = state.vclips.indexOf(clip);
+    const newLink = uid('lnk');
+    const left = Object.assign({}, clip, { id: uid('v'), out: splitSrc, fadeOut: 0 });
+    const right = Object.assign({}, clip, { id: uid('v'), in: splitSrc, fadeIn: 0, linkId: newLink });
+    state.vclips.splice(idx, 1, left, right);
+    const a = state.aclips.find(function(c){ return c.linkId===left.linkId && c.linked; });
+    if(a){
+      const aRight = Object.assign({}, a, { id: uid('a'), linkId: newLink, fadeIn:0 });
+      a.fadeOut = 0;
+      state.aclips.push(aRight);
+    }
+    state.selected = { track:'V', id: right.id };
+  } else {
+    const idx = state.aclips.indexOf(clip);
+    /* Left half keeps the clip id so its already-buffered audio element (and
+       any sound currently playing through it) survives the split. */
+    const left = Object.assign({}, clip, { out: splitSrc, fadeOut: 0, linked:false });
+    const right = Object.assign({}, clip, { id: uid('a'), in: splitSrc, fadeIn: 0,
+                                            start: clip.start + offset, linked:false, linkId:null });
+    state.aclips.splice(idx, 1, left, right);
+    state.selected = { track:'A', id: right.id };
+  }
   afterChange();
   toast('클립을 분할했습니다.','info');
 }
 
 function cutAtPlayhead(){
-  const loc = locate(state.playhead);
-  if(!loc){ toast('자를 클립이 없습니다.','warn'); return; }
-  const c = state.clips[loc.index];
-  const dur = clipDur(c);
-  const EPS = 0.08;
-  if(loc.offset < EPS){
-    toast('클립 시작 지점에서는 자를 수 없습니다.','warn');
-    return;
-  }
-  if(loc.offset > dur - EPS){
-    toast('클립 끝 지점입니다. 자를 내용이 없습니다.','warn');
-    return;
-  }
+  const target = opTarget(true);
+  if(!target){ toast('재생헤드 위치에 자를 클립이 없습니다.','warn'); return; }
+  const { track, clip } = target;
+  const s = clipTimelineStart(track, clip);
+  const offset = state.playhead - s;
+  const d = clipDur(clip);
+  if(offset < MIN_CLIP){ toast('클립 시작 지점에서는 자를 수 없습니다.','warn'); return; }
+  if(offset > d - MIN_CLIP){ toast('클립 끝 지점입니다. 자를 내용이 없습니다.','warn'); return; }
   pushHistory();
-  const wasPlaying = state.isPlaying;
-  if(wasPlaying) pause();
-  const newOut = c.in + loc.offset;
-  c.out = newOut;
-  const newDur = clipDur(c);
-  c.fadeOut = Math.min(c.fadeOut||0, newDur);
-  c.fadeIn = Math.min(c.fadeIn||0, newDur - c.fadeOut);
-  state.selectedId = c.id;
+  if(state.isPlaying) pause();
+  clip.out = clip.in + offset;
+  const nd = clipDur(clip);
+  clip.fadeOut = Math.min(clip.fadeOut||0, nd);
+  clip.fadeIn = Math.min(clip.fadeIn||0, Math.max(0, nd - (clip.fadeOut||0)));
+  state.selected = { track, id: clip.id };
   afterChange();
-  toast('자르는 지점 이후를 삭제했습니다.','info');
+  toast('재생헤드 이후를 삭제했습니다.','info');
 }
 
 function deleteSelected(){
-  const id = state.selectedId || currentClipIdAtPlayhead();
-  const idx = state.clips.findIndex(function(c){ return c.id===id; });
-  if(idx<0){ toast('삭제할 클립을 선택하세요.','warn'); return; }
+  const target = opTarget(false);
+  if(!target){ toast('삭제할 클립을 선택하세요.','warn'); return; }
   pushHistory();
-  state.clips.splice(idx,1);
-  state.selectedId = null;
+  const { track, clip } = target;
+  if(track==='V'){
+    const a = linkedAudioOf(clip);
+    state.vclips = state.vclips.filter(function(c){ return c.id!==clip.id; });
+    if(a){ releaseHandle(a.id); state.aclips = state.aclips.filter(function(c){ return c.id!==a.id; }); }
+  } else {
+    releaseHandle(clip.id);
+    state.aclips = state.aclips.filter(function(c){ return c.id!==clip.id; });
+  }
+  state.selected = null;
   afterChange();
+  toast('클립을 삭제했습니다.','info');
 }
 
 function duplicateSelected(){
-  const id = state.selectedId || currentClipIdAtPlayhead();
-  const idx = state.clips.findIndex(function(c){ return c.id===id; });
-  if(idx<0){ toast('복제할 클립을 선택하세요.','warn'); return; }
+  const target = opTarget(false);
+  if(!target){ toast('복제할 클립을 선택하세요.','warn'); return; }
   pushHistory();
-  const copy = Object.assign({}, state.clips[idx], { id: uid('clip') });
-  state.clips.splice(idx+1,0,copy);
-  state.selectedId = copy.id;
-  afterChange();
-}
-
-function applyFadeIn(){
-  const c = targetClip();
-  if(!c){ toast('대상 클립이 없습니다.','warn'); return; }
-  pushHistory();
-  const len = parseFloat(fadeLenSelect.value);
-  const dur = clipDur(c);
-  c.fadeIn = Math.max(0, Math.min(len, dur - (c.fadeOut||0)));
-  afterChange();
-}
-function applyFadeOut(){
-  const c = targetClip();
-  if(!c){ toast('대상 클립이 없습니다.','warn'); return; }
-  pushHistory();
-  const len = parseFloat(fadeLenSelect.value);
-  const dur = clipDur(c);
-  c.fadeOut = Math.max(0, Math.min(len, dur - (c.fadeIn||0)));
-  afterChange();
-}
-function clearFade(){
-  const c = targetClip();
-  if(!c){ toast('대상 클립이 없습니다.','warn'); return; }
-  pushHistory();
-  c.fadeIn = 0; c.fadeOut = 0;
-  afterChange();
-}
-
-let volDragActive = false;
-let volInputEditing = false;
-
-function applyVolumeLive(c, pct){
-  c.volume = pctToVolume(pct);
-  renderTimeline();
-  if(!state.isPlaying){
-    const loc = locate(state.playhead);
-    if(loc && state.clips[loc.index].id === c.id){
-      applyAudioLevel(clipFadeFactor(c, loc.offset) * c.volume);
-    }
-  }
-}
-
-volSlider.addEventListener('mousedown', function(){ volDragActive = false; });
-volSlider.addEventListener('input', function(){
-  const c = targetClip();
-  const pct = parseFloat(volSlider.value);
-  volInput.value = String(pct);
-  if(!c) return;
-  if(!volDragActive){ pushHistory(); volDragActive = true; }
-  applyVolumeLive(c, pct);
-});
-volSlider.addEventListener('change', function(){ volDragActive = false; });
-
-volInput.addEventListener('input', function(){
-  let val = parseFloat(volInput.value);
-  if(isNaN(val)) return;
-  val = Math.max(-100, Math.min(100, Math.round(val)));
-  const c = targetClip();
-  if(!c) return;
-  if(!volInputEditing){ pushHistory(); volInputEditing = true; }
-  volSlider.value = String(val);
-  applyVolumeLive(c, val);
-});
-volInput.addEventListener('blur', function(){
-  volInputEditing = false;
-  updateVolumeUI();
-});
-volInput.addEventListener('keydown', function(e){
-  if(e.key === 'Enter'){ e.preventDefault(); volInput.blur(); }
-});
-
-function updateVolumeUI(){
-  const c = targetClip();
-  if(c){
-    const pct = volumeToPct(c.volume);
-    volSlider.value = String(pct);
-    if(document.activeElement !== volInput) volInput.value = String(pct);
+  const { track, clip } = target;
+  if(track==='V'){
+    const idx = state.vclips.indexOf(clip);
+    const newLink = uid('lnk');
+    const copy = Object.assign({}, clip, { id: uid('v'), linkId: newLink });
+    state.vclips.splice(idx+1, 0, copy);
+    const a = linkedAudioOf(clip);
+    if(a) state.aclips.push(Object.assign({}, a, { id: uid('a'), linkId: newLink }));
+    state.selected = { track:'V', id: copy.id };
   } else {
-    volSlider.value = '0';
-    if(document.activeElement !== volInput) volInput.value = '0';
+    const copy = Object.assign({}, clip, { id: uid('a'), start: aEnd(clip), linked:false, linkId:null });
+    state.aclips.push(copy);
+    state.selected = { track:'A', id: copy.id };
   }
+  afterChange();
+  toast('클립을 복제했습니다.','info');
 }
+
+function applyFade(kind){
+  const target = opTarget(false);
+  if(!target){ toast('대상 클립이 없습니다.','warn'); return; }
+  pushHistory();
+  const c = target.clip;
+  const len = parseFloat(fadeLenSelect.value);
+  const d = clipDur(c);
+  if(kind==='in') c.fadeIn = Math.max(0, Math.min(len, d - (c.fadeOut||0)));
+  else if(kind==='out') c.fadeOut = Math.max(0, Math.min(len, d - (c.fadeIn||0)));
+  else { c.fadeIn = 0; c.fadeOut = 0; }
+  /* A linked pair fades picture and sound together, which is what people
+     expect from a fade in a video editor. */
+  if(target.track==='V'){
+    const a = linkedAudioOf(c);
+    if(a){ a.fadeIn = c.fadeIn; a.fadeOut = c.fadeOut; }
+  }
+  afterChange();
+}
+function toggleMute(){
+  const a = volumeTargetClip();
+  if(!a){ toast('음소거할 소리 클립이 없습니다.','warn'); return; }
+  pushHistory();
+  a.mute = !a.mute;
+  afterChange();
+  toast(a.mute ? '소리 클립을 음소거했습니다.' : '음소거를 해제했습니다.','info');
+}
+
+/* ---- volume control -------------------------------------------------
+   One edit session per drag: the target clip is locked when the drag starts
+   so it can't change mid-gesture, only that clip's badge is repainted while
+   dragging, and the slider is never written back to while the user holds it. */
+const volEdit = { active:false, clip:null };
+let volWarnAt = 0;
+let previewTimer = null, previewRec = null;
+
+function volBusy(){
+  return volEdit.active || document.activeElement===volSlider || document.activeElement===volInput;
+}
+function updateVolumeUI(){
+  const a = volumeTargetClip();
+  const src = a ? state.sources[a.sourceId] : null;
+  volSlider.disabled = !a;
+  volInput.disabled = !a;
+  volTargetEl.textContent = a ? ('A'+aTrackOf(a)+' · '+(src?src.name:'?')) : '대상 없음';
+  volTargetEl.classList.toggle('none', !a);
+  volTargetEl.title = a ? (src?src.name:'') : '소리 클립을 선택하면 볼륨을 조절할 수 있습니다.';
+  if(volBusy()) return;   /* never fight the control while it is being used */
+  const pct = a ? (a.mute ? -100 : volumeToPct(a.volume)) : 0;
+  volSlider.value = String(pct);
+  volInput.value = String(pct);
+}
+function beginVolEdit(){
+  if(volEdit.active && volEdit.clip && state.aclips.indexOf(volEdit.clip) >= 0) return volEdit.clip;
+  const c = volumeTargetClip();
+  if(!c) return null;
+  pushHistory();
+  volEdit.active = true;
+  volEdit.clip = c;
+  return c;
+}
+function endVolEdit(){
+  if(!volEdit.active) return;
+  const c = volEdit.clip;
+  volEdit.active = false;
+  volEdit.clip = null;
+  renderTimeline();
+  if(c) previewVolume(c);
+}
+/* Short audible preview on release so the change is obviously taking effect
+   even when the timeline is paused. */
+function previewVolume(c){
+  if(state.isPlaying) return;
+  const rec = handleFor(c);
+  if(!rec) return;
+  const ctx = getCtx();
+  if(ctx.state === 'suspended'){ try{ ctx.resume(); }catch(e){} }
+  let off = state.playhead - c.start;
+  if(off < 0 || off >= clipDur(c)) off = 0;
+  if(previewTimer){ clearTimeout(previewTimer); }
+  if(previewRec && previewRec !== rec){ pauseHandle(previewRec); }
+  previewRec = rec;
+  setHandleGain(rec, fadeFactor(c, off) * volOf(c));
+  try{ rec.el.currentTime = c.in + off; }catch(e){}
+  const p = rec.el.play();
+  if(p && p.catch) p.catch(function(){});
+  previewTimer = setTimeout(function(){
+    pauseHandle(rec);
+    previewTimer = null; previewRec = null;
+  }, 800);
+}
+function setClipVolume(c, pct){
+  pct = clamp(Math.round(pct), -100, 100);
+  c.mute = false;
+  c.volume = pctToVolume(pct);
+  refreshClipBadge(c);
+  const rec = state.audio.handles[c.id];
+  if(rec && state.isPlaying){
+    const off = state.playhead - c.start;
+    if(off >= 0 && off < clipDur(c)) setHandleGain(rec, fadeFactor(c, off) * volOf(c));
+  }
+  return pct;
+}
+function onVolInput(rawPct, fromBox){
+  if(isNaN(rawPct)) return;
+  const c = beginVolEdit();
+  if(!c){
+    const now = Date.now();
+    if(now - volWarnAt > 2500){
+      volWarnAt = now;
+      toast('볼륨을 적용할 소리 클립이 없습니다. A1 또는 A2에서 클립을 선택하세요.','warn');
+    }
+    updateVolumeUI();
+    return;
+  }
+  const pct = setClipVolume(c, rawPct);
+  if(fromBox) volSlider.value = String(pct);
+  else volInput.value = String(pct);
+}
+volSlider.addEventListener('input', function(){ onVolInput(parseFloat(volSlider.value), false); });
+volSlider.addEventListener('change', endVolEdit);
+volSlider.addEventListener('blur', endVolEdit);
+/* pointerup/mouseup are a safety net in case 'change' is swallowed
+   (dragging off the control, touch input, etc). */
+volSlider.addEventListener('pointerup', endVolEdit);
+window.addEventListener('mouseup', function(){ if(volEdit.active && document.activeElement!==volInput) endVolEdit(); });
+
+volInput.addEventListener('input', function(){ onVolInput(parseFloat(volInput.value), true); });
+volInput.addEventListener('change', endVolEdit);
+volInput.addEventListener('blur', function(){ endVolEdit(); updateVolumeUI(); });
+volInput.addEventListener('keydown', function(e){ if(e.key==='Enter'){ e.preventDefault(); volInput.blur(); } });
 
 /* =========================================================
-   AFTER-CHANGE / PLACEHOLDER
+   AFTER-CHANGE
    ========================================================= */
 function updatePlaceholder(){
-  const empty = state.clips.length===0;
+  const empty = state.vclips.length===0;
   placeholder.style.display = empty ? 'flex' : 'none';
-  trackEmpty.classList.toggle('hidden', !empty);
-  if(empty) activeSourceNone();
+  if(empty) hideVideo();
 }
 let prevClipCount = 0;
 function fitZoomToContent(){
   const dur = totalDuration();
   if(dur <= 0) return;
   const areaWidth = Math.max(100, tlScroll.clientWidth - LABEL_WIDTH);
-  /* ⚠ The zoom slider's minimum is calibrated so 600s (10 min) fits the
-     screen — but real footage is almost always far shorter than that.
-     Starting at that minimum turns short clips into an unclickable sliver
-     a few pixels wide, so any click/scrub lands past the end and always
-     shows the last frame. Instead, fit the ACTUAL content to the visible
-     width (with a little padding) the first time clips appear. */
-  let px = areaWidth / (dur * 1.15);
-  px = Math.max(state.minPxPerSec, Math.min(30, px));
-  state.pxPerSec = px;
+  /* The zoom minimum is calibrated so 10 minutes fits the screen, but real
+     footage is usually far shorter — starting there would turn short clips
+     into an unclickable sliver. Fit the actual content instead. */
+  state.pxPerSec = clamp(areaWidth/(dur*1.15), state.minPxPerSec, MAX_ZOOM);
 }
-function afterChange(){
+function afterChange(skipHistoryFit){
+  syncLinks();
   const dur = totalDuration();
   if(state.playhead > dur) state.playhead = dur;
-  if(prevClipCount === 0 && state.clips.length > 0){
-    fitZoomToContent();
-  }
-  prevClipCount = state.clips.length;
+  const count = state.vclips.length + state.aclips.length;
+  if(prevClipCount === 0 && count > 0) fitZoomToContent();
+  prevClipCount = count;
+  gcHandles();
+  primeAudioHandles();
   renderTimeline();
   updatePlaceholder();
   if(!state.isPlaying) seekPreview(state.playhead);
@@ -3258,9 +4104,9 @@ function afterChange(){
 }
 
 /* =========================================================
-   TRANSPORT / TOOLBAR WIRING
+   TRANSPORT / TOOLBAR
    ========================================================= */
-$('btnPlay').addEventListener('click', function(){ state.isPlaying ? pause() : play(); });
+$('btnPlay').addEventListener('click', togglePlay);
 $('btnToStart').addEventListener('click', function(){ pause(); state.playhead=0; seekPreview(0); updatePlayheadUI(); });
 $('btnToEnd').addEventListener('click', function(){ pause(); state.playhead=totalDuration(); seekPreview(state.playhead); updatePlayheadUI(); });
 $('btnCut').addEventListener('click', cutAtPlayhead);
@@ -3268,45 +4114,299 @@ $('btnSplit').addEventListener('click', splitAtPlayhead);
 $('btnDuplicate').addEventListener('click', duplicateSelected);
 $('btnDelete').addEventListener('click', deleteSelected);
 $('btnUndo').addEventListener('click', undo);
-$('btnFadeIn').addEventListener('click', applyFadeIn);
-$('btnFadeOut').addEventListener('click', applyFadeOut);
-$('btnFadeClear').addEventListener('click', clearFade);
+$('btnLink').addEventListener('click', toggleLink);
+$('btnMute').addEventListener('click', toggleMute);
+$('btnFadeIn').addEventListener('click', function(){ applyFade('in'); });
+$('btnFadeOut').addEventListener('click', function(){ applyFade('out'); });
+$('btnFadeClear').addEventListener('click', function(){ applyFade('clear'); });
 zoomSlider.addEventListener('input', function(){
-  state.pxPerSec = parseFloat(zoomSlider.value);
-  renderTimeline();
+  const a = zoomAnchor();
+  setZoom(parseFloat(zoomSlider.value), a.t, a.x);
 });
-window.addEventListener('resize', function(){
-  resizeCanvas();
-  renderTimeline();
-});
+/* Ctrl/Cmd + wheel zooms about the pointer. */
+tlScroll.addEventListener('wheel', function(e){
+  if(!(e.ctrlKey || e.metaKey)) return;
+  e.preventDefault();
+  const px = e.clientX - tlScroll.getBoundingClientRect().left;
+  const t = (tlScroll.scrollLeft + px - LABEL_WIDTH)/state.pxPerSec;
+  setZoom(state.pxPerSec * Math.exp(-e.deltaY * 0.0015), Math.max(0,t), px);
+}, { passive:false });
+window.addEventListener('resize', function(){ resizeCanvas(); renderTimeline(); });
 
 function stepFrame(dir){
   pause();
-  state.playhead = Math.max(0, Math.min(totalDuration(), state.playhead + dir/FPS));
+  state.playhead = clamp(state.playhead + dir/FPS, 0, totalDuration());
   seekPreview(state.playhead);
   updatePlayheadUI();
 }
 window.addEventListener('keydown', function(e){
   const tag = (document.activeElement && document.activeElement.tagName) || '';
   if(['INPUT','TEXTAREA','SELECT'].indexOf(tag) !== -1) return;
+  if((e.ctrlKey||e.metaKey) && (e.key==='s'||e.key==='S')){ e.preventDefault(); saveProject(); return; }
+  if((e.ctrlKey||e.metaKey) && (e.key==='o'||e.key==='O')){ e.preventDefault(); projectInput.click(); return; }
+  if((e.ctrlKey||e.metaKey) && (e.key==='z'||e.key==='Z')){ e.preventDefault(); undo(); return; }
   switch(e.key){
-    case ' ': e.preventDefault(); state.isPlaying ? pause() : play(); break;
+    case ' ': e.preventDefault(); togglePlay(); break;
     case 's': case 'S': case 'c': case 'C': splitAtPlayhead(); break;
     case 'Delete': case 'Backspace': deleteSelected(); break;
     case 'd': case 'D': duplicateSelected(); break;
+    case 'l': case 'L': toggleLink(); break;
+    case 'm': case 'M': toggleMute(); break;
     case 'Home': pause(); state.playhead=0; seekPreview(0); updatePlayheadUI(); break;
     case 'End': pause(); state.playhead=totalDuration(); seekPreview(state.playhead); updatePlayheadUI(); break;
     case 'ArrowLeft': stepFrame(-1); break;
     case 'ArrowRight': stepFrame(1); break;
-    case 'z': case 'Z': if(e.ctrlKey || e.metaKey){ e.preventDefault(); undo(); } break;
   }
 });
 
 /* =========================================================
-   EXPORT
+   PROJECT SAVE / LOAD (.json)
+   ========================================================= */
+function downloadBlob(blob, filename){
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(function(){ URL.revokeObjectURL(url); }, 8000);
+}
+function stamp(){
+  const d = new Date(), p = n=>String(n).padStart(2,'0');
+  return d.getFullYear()+p(d.getMonth()+1)+p(d.getDate())+'_'+p(d.getHours())+p(d.getMinutes())+p(d.getSeconds());
+}
+$('btnSaveProject').addEventListener('click', saveProject);
+function saveProject(){
+  if(state.vclips.length===0 && state.aclips.length===0){ toast('저장할 클립이 없습니다.','warn'); return; }
+  const data = {
+    app: 'K-VIDEO EDITOR',
+    format: 'kve-project',
+    version: 2,
+    savedAt: new Date().toISOString(),
+    playhead: state.playhead,
+    pxPerSec: state.pxPerSec,
+    sources: Object.keys(state.sources).map(function(id){
+      const s = state.sources[id];
+      return { id:s.id, name:s.name, kind:s.kind, duration:s.duration, size:s.size, color:s.color, hasAudio:s.hasAudio };
+    }),
+    videoClips: state.vclips.map(function(c){
+      return { id:c.id, sourceId:c.sourceId, in:c.in, out:c.out, fadeIn:c.fadeIn||0,
+               fadeOut:c.fadeOut||0, linkId:c.linkId||null, fit:c.fit||null };
+    }),
+    audioClips: state.aclips.map(function(c){
+      return { id:c.id, sourceId:c.sourceId, start:c.start, track:aTrackOf(c), in:c.in, out:c.out,
+               fadeIn:c.fadeIn||0, fadeOut:c.fadeOut||0, volume:(c.volume==null?1:c.volume),
+               mute:!!c.mute, linkId:c.linkId||null, linked:!!c.linked };
+    })
+  };
+  const name = 'K_VIDEO_PROJECT_' + stamp() + '.json';
+  downloadBlob(new Blob([JSON.stringify(data,null,2)], { type:'application/json' }), name);
+  toast(name + ' 로 저장했습니다. (미디어 파일은 포함되지 않습니다)','info');
+}
+
+$('btnOpenProject').addEventListener('click', function(){ projectInput.click(); });
+projectInput.addEventListener('change', function(e){
+  const f = e.target.files && e.target.files[0];
+  projectInput.value = '';
+  if(f) readProjectFile(f);
+});
+function readProjectFile(file){
+  const reader = new FileReader();
+  reader.onload = function(){
+    let data;
+    try{ data = JSON.parse(reader.result); }
+    catch(err){ toast('프로젝트 파일을 읽을 수 없습니다 (JSON 형식 오류).','error'); return; }
+    openProject(data);
+  };
+  reader.onerror = function(){ toast('프로젝트 파일을 읽을 수 없습니다.','error'); };
+  reader.readAsText(file);
+}
+
+let pendingProject = null;   /* { data, resolved:{savedId->liveId}, keep:[] } */
+
+function missingSources(){
+  if(!pendingProject) return [];
+  return pendingProject.data.sources.filter(function(s){ return !pendingProject.resolved[s.id]; });
+}
+function openProject(data){
+  if(!data || data.format !== 'kve-project' || !Array.isArray(data.sources)){
+    toast('이 파일은 K-VIDEO EDITOR 프로젝트가 아닙니다.','error');
+    return false;
+  }
+  if(state.vclips.length || state.aclips.length){
+    if(!window.confirm('현재 편집 중인 내용이 사라집니다. 프로젝트를 여시겠습니까?')) return false;
+  }
+  if(state.isPlaying) pause();
+
+  /* Reuse media already loaded in this session where name and length match. */
+  const resolved = {}, keep = [];
+  data.sources.forEach(function(s){
+    const hit = Object.keys(state.sources).map(function(id){ return state.sources[id]; })
+      .find(function(x){ return x.name === s.name && Math.abs((x.duration||0)-(s.duration||0)) < 0.25; });
+    if(hit){ resolved[s.id] = hit.id; keep.push(hit.id); }
+  });
+  pendingProject = { data: data, resolved: resolved, keep: keep };
+
+  if(missingSources().length === 0){
+    applyPendingProject();
+    return true;
+  }
+  showRelinkModal();
+  return false;
+}
+function showRelinkModal(){
+  const pp = pendingProject;
+  if(!pp) return;
+  relinkList.innerHTML = pp.data.sources.map(function(s){
+    const ok = !!pp.resolved[s.id];
+    return '<div><span>'+escapeHtml(s.name)+'</span>'+
+           '<span class="'+(ok?'ok':'miss')+'">'+(ok?'연결됨':'필요')+'</span></div>';
+  }).join('');
+  relinkOverlay.classList.remove('hidden');
+}
+$('relinkPick').addEventListener('click', function(){ relinkInput.click(); });
+$('relinkCancel').addEventListener('click', function(){
+  pendingProject = null;
+  relinkOverlay.classList.add('hidden');
+  toast('프로젝트 열기를 취소했습니다.','info');
+});
+$('relinkSkip').addEventListener('click', function(){
+  relinkOverlay.classList.add('hidden');
+  applyPendingProject();
+});
+relinkInput.addEventListener('change', async function(e){
+  const files = Array.from(e.target.files||[]);
+  relinkInput.value = '';
+  if(!pendingProject || files.length === 0) return;
+  relinkOverlay.classList.add('hidden');
+  toast('미디어를 불러오는 중입니다...','info');
+
+  for(const s of pendingProject.data.sources){
+    if(pendingProject.resolved[s.id]) continue;
+    let f = files.find(function(x){ return x.name === s.name; });
+    if(!f) f = files.find(function(x){ return x.name.toLowerCase() === String(s.name).toLowerCase(); });
+    if(!f && s.size) f = files.find(function(x){ return x.size === s.size; });
+    if(!f) continue;
+    const newId = await importFile(f, { forceId: uid('src'), color: s.color, noClip: true });
+    if(newId){ pendingProject.resolved[s.id] = newId; pendingProject.keep.push(newId); }
+  }
+  const left = missingSources().length;
+  if(left){
+    showRelinkModal();
+    toast(left + '개 미디어를 아직 찾지 못했습니다. 다시 선택하거나 "연결된 것만 열기"를 누르세요.','warn');
+    return;
+  }
+  applyPendingProject();
+});
+
+function applyPendingProject(){
+  if(!pendingProject) return;
+  const data = pendingProject.data, resolved = pendingProject.resolved, keep = pendingProject.keep;
+  pendingProject = null;
+  relinkOverlay.classList.add('hidden');
+
+  /* Drop any media that is not part of the project being opened. */
+  Object.keys(state.sources).slice().forEach(function(id){
+    if(keep.indexOf(id) === -1){
+      const src = state.sources[id];
+      if(src.el){
+        try{ src.el.pause(); src.el.removeAttribute('src'); src.el.load(); }catch(e){}
+        if(src.el.parentNode) src.el.parentNode.removeChild(src.el);
+      }
+      try{ URL.revokeObjectURL(src.url); }catch(e){}
+      const item = binList.querySelector('.bin-item[data-id="'+id+'"]');
+      if(item) item.remove();
+      delete state.sources[id];
+    }
+  });
+  Object.keys(state.audio.handles).forEach(releaseHandle);
+  hideVideo();
+  state.history = [];
+
+  const linkMap = {};
+  function mapLink(l){
+    if(!l) return null;
+    if(!linkMap[l]) linkMap[l] = uid('lnk');
+    return linkMap[l];
+  }
+  let dropped = 0;
+  state.vclips = (data.videoClips||[]).map(function(c){
+    const sid = resolved[c.sourceId];
+    if(!sid){ dropped++; return null; }
+    const nc = { id: uid('v'), sourceId: sid, in: c.in, out: c.out,
+                 fadeIn: c.fadeIn||0, fadeOut: c.fadeOut||0, linkId: mapLink(c.linkId) };
+    if(state.sources[sid] && state.sources[sid].kind === 'image') nc.fit = (c.fit === 'contain') ? 'contain' : 'height';
+    return nc;
+  }).filter(Boolean);
+  state.aclips = (data.audioClips||[]).map(function(c){
+    const sid = resolved[c.sourceId];
+    if(!sid){ dropped++; return null; }
+    return { id: uid('a'), sourceId: sid, start: c.start||0, track: (c.track===2?2:1), in: c.in, out: c.out,
+             fadeIn: c.fadeIn||0, fadeOut: c.fadeOut||0,
+             volume: (c.volume==null?1:c.volume), mute: !!c.mute,
+             linkId: mapLink(c.linkId), linked: !!c.linked };
+  }).filter(Boolean);
+
+  state.selected = null;
+  state.playhead = 0;
+  prevClipCount = 0;
+  if(Object.keys(state.sources).length === 0) binEmpty.classList.remove('hidden');
+  updateBinCount();
+  afterChange();
+  if(typeof data.pxPerSec === 'number'){
+    state.pxPerSec = clamp(data.pxPerSec, state.minPxPerSec, MAX_ZOOM);
+    renderTimeline();
+  }
+  if(dropped) toast(dropped+'개 클립은 미디어를 찾지 못해 제외했습니다.','warn');
+  toast('프로젝트를 불러왔습니다. (영상 '+state.vclips.length+' / 소리 '+state.aclips.length+')','info');
+}
+
+/* =========================================================
+   EXPORT (H.264 + AAC MP4, PowerPoint-friendly)
+   Every wait in here is bounded and abortable: an encoder that dies or
+   stalls must surface as an error, never as a frozen progress bar.
    ========================================================= */
 $('btnExport').addEventListener('click', startExport);
+$('exportCancel').addEventListener('click', function(){
+  if(!exportInProgress) return;
+  exportCancelled = true;
+  exportProgressLabel.textContent = '취소하는 중...';
+});
 
+const waitMs = function(ms){ return new Promise(function(r){ setTimeout(r, ms); }); };
+let exportInProgress = false, exportCancelled = false, exportAbortErr = null;
+const CANCELLED = 'K_EXPORT_CANCELLED';
+/* Watchdog budgets. Kept in one mutable object so they are inspectable and
+   adjustable rather than buried as magic numbers. */
+const EXPORT_TUNING = { queueWaitMs: 60000, stallAbortMs: 90000, pollMs: 120 };
+
+function exportFail(e){
+  if(exportAbortErr) return;
+  exportAbortErr = (e instanceof Error) ? e : new Error((e && e.message) ? e.message : String(e));
+  console.error('export encoder error:', e);
+}
+function exportCheck(){
+  if(exportCancelled) throw new Error(CANCELLED);
+  if(exportAbortErr) throw exportAbortErr;
+}
+/* Bounded wait: gives up with a readable message instead of spinning. */
+async function waitFor(cond, timeoutMs, what){
+  const t0 = performance.now();
+  while(!cond()){
+    exportCheck();
+    if(performance.now() - t0 > timeoutMs){
+      throw new Error(what + ' 단계가 ' + Math.round(timeoutMs/1000) + '초 동안 응답하지 않아 중단했습니다.');
+    }
+    await waitMs(12);
+  }
+  exportCheck();
+}
+/* Phased progress so the bar never parks at 100% while work continues. */
+const EXPORT_PHASES = { prep:[0,3], mix:[3,10], video:[10,70], vflush:[70,80], aenc:[80,92], mux:[92,100] };
+function setPhase(phase, frac, label){
+  const r = EXPORT_PHASES[phase] || [0,100];
+  showExportOverlay(true, label, r[0] + (r[1]-r[0]) * clamp(frac, 0, 1));
+}
 function showExportOverlay(show, label, pct){
   exportOverlay.classList.toggle('hidden', !show);
   if(label !== undefined) exportProgressLabel.textContent = label;
@@ -3315,12 +4415,18 @@ function showExportOverlay(show, label, pct){
     exportProgressPct.textContent = Math.round(pct) + '%';
   }
 }
-function updateExportNote(filename){
+function updateExportNote(filename, est){
   if(filename){
-    exportNote.innerHTML = 'PowerPoint 삽입에 최적화된 <b>H.264/AAC MP4</b>로 렌더링합니다.<br>완료되면 브라우저의 <b>기본 다운로드 폴더</b>에 <b>' + escapeHtml(filename) + '</b> 파일로 자동 저장됩니다.';
+    exportNote.innerHTML = 'PowerPoint 삽입에 최적화된 <b>H.264/AAC MP4</b>로 렌더링합니다.<br>' +
+      (est ? '예상 크기 <b>' + est + '</b> · ' : '') +
+      '완료되면 브라우저의 <b>기본 다운로드 폴더</b>에 <b>' + escapeHtml(filename) + '</b> 파일로 저장됩니다.';
   } else {
     exportNote.innerHTML = 'PowerPoint 삽입에 최적화된 <b>H.264/AAC MP4</b>로 렌더링합니다.<br>내보내기 중에는 브라우저 창을 닫거나 백그라운드로 보내지 마세요.';
   }
+}
+function fmtBytes(b){
+  if(b > 1024*1024*1024) return (b/1024/1024/1024).toFixed(1) + ' GB';
+  return Math.round(b/1024/1024) + ' MB';
 }
 
 const PPT_EXPORT_PRESETS = [
@@ -3330,33 +4436,41 @@ const PPT_EXPORT_PRESETS = [
   { width:1280, height:720,  fps:30, bitrate:6000000,  label:'720p_30fps'  }
 ];
 const PPT_EXPORT_CODECS = ['avc1.64002A','avc1.4D402A','avc1.640028','avc1.4D4028','avc1.42E01F','avc1.42E01E'];
-let exportInProgress = false;
+/* The finished file is assembled in RAM before download, so a preset whose
+   projected size would blow past this is downgraded automatically — an
+   out-of-memory finalize is what used to look like "stuck at 100%". */
+const MAX_EXPORT_BYTES = 900 * 1024 * 1024;
 const EXPORT_START_PRIME_SECONDS = 0.22;
 const EXPORT_STALL_RECOVERY_MS = 900;
 const EXPORT_SEEK_TIMEOUT_MS = 2600;
 
-async function startExport(){
-  if(exportInProgress){ toast('이미 내보내기 중입니다. 완료될 때까지 기다려 주세요.','warn'); return; }
-  if(state.clips.length===0){ toast('내보낼 클립이 없습니다.','warn'); return; }
-  if(state.isPlaying) pause();
-  exportInProgress = true;
-  updateExportNote(null);
-  showExportOverlay(true, 'PowerPoint용 MP4 준비 중...', 0);
-  let savedFilename = null;
-  try{
-    if(!(await supportsWebCodecs())){
-      throw new Error('이 브라우저는 PowerPoint 호환 H.264/AAC MP4 렌더링을 지원하지 않습니다. Windows Chrome 또는 Edge 최신 버전에서 실행해 주세요.');
+function estExportBytes(preset, total){
+  return (preset.bitrate/8 + 24000) * Math.max(0, total) * 1.06;
+}
+async function choosePptExportConfig(total){
+  const supported = [];
+  for(const preset of PPT_EXPORT_PRESETS){
+    for(const codec of PPT_EXPORT_CODECS){
+      try{
+        const s = await VideoEncoder.isConfigSupported({
+          codec: codec, width: preset.width, height: preset.height,
+          bitrate: preset.bitrate, framerate: preset.fps, latencyMode: 'quality'
+        });
+        if(s && s.supported){
+          supported.push({ width:preset.width, height:preset.height, bitrate:preset.bitrate,
+                           fps:preset.fps, label:preset.label, codec:codec });
+          break;
+        }
+      }catch(e){}
     }
-    savedFilename = await exportPrecise();
-    toast((savedFilename||'파일')+' 이 다운로드 폴더에 저장되었습니다.', 'info');
-  } catch(err){
-    console.error(err);
-    toast('내보내기 중 오류가 발생했습니다: ' + (err && err.message ? err.message : err), 'error');
-  } finally {
-    exportInProgress = false;
-    showExportOverlay(false);
-    seekPreview(state.playhead);
   }
+  if(!supported.length) throw new Error('지원되는 PowerPoint용 H.264 MP4 인코딩 설정이 없습니다.');
+  if(total && total > 0){
+    const fits = supported.filter(function(p){ return estExportBytes(p, total) <= MAX_EXPORT_BYTES; });
+    if(fits.length) return fits[0];
+    return supported.slice().sort(function(a,b){ return estExportBytes(a,total)-estExportBytes(b,total); })[0];
+  }
+  return supported[0];
 }
 function isChromeOrEdge(){
   const ua = navigator.userAgent || '';
@@ -3371,61 +4485,59 @@ async function supportsWebCodecs(){
      typeof window.VideoFrame === 'undefined' ||
      !window.Mp4Muxer) return false;
   try{
-    await choosePptExportConfig();
+    await choosePptExportConfig(0);
     const aSupport = await AudioEncoder.isConfigSupported({ codec:'mp4a.40.2', sampleRate:48000, numberOfChannels:2, bitrate:192000 });
     if(!aSupport || !aSupport.supported) return false;
   }catch(e){ return false; }
   return true;
 }
 
-function getUsedSourceIds(){
-  const set = {};
-  state.clips.forEach(function(c){ set[c.sourceId] = true; });
-  return Object.keys(set);
-}
-function computeResolution(){
-  /* PowerPoint-first output: 16:9 H.264 MP4. 60fps is prioritized so motion
-     remains smooth; if the local Chrome/Edge encoder cannot support it,
-     choosePptExportConfig() automatically falls back to another MP4-only
-     preset without ever using WebM or live screen recording. */
-  const p = PPT_EXPORT_PRESETS[0];
-  return { width:p.width, height:p.height, bitrate:p.bitrate, fps:p.fps, label:p.label };
-}
-async function choosePptExportConfig(){
-  for(const preset of PPT_EXPORT_PRESETS){
-    for(const codec of PPT_EXPORT_CODECS){
-      try{
-        const support = await VideoEncoder.isConfigSupported({
-          codec: codec,
-          width: preset.width,
-          height: preset.height,
-          bitrate: preset.bitrate,
-          framerate: preset.fps,
-          latencyMode: 'quality'
-        });
-        if(support && support.supported){
-          return { width:preset.width, height:preset.height, bitrate:preset.bitrate, fps:preset.fps, label:preset.label, codec:codec };
-        }
-      }catch(e){}
+async function startExport(){
+  if(exportInProgress){ toast('이미 내보내기 중입니다. 완료될 때까지 기다려 주세요.','warn'); return; }
+  if(state.vclips.length===0 && state.aclips.length===0){ toast('내보낼 클립이 없습니다.','warn'); return; }
+  if(state.isPlaying) pause();
+  exportInProgress = true;
+  exportCancelled = false;
+  exportAbortErr = null;
+  updateExportNote(null);
+  setPhase('prep', 0, 'PowerPoint용 MP4 준비 중...');
+  let savedFilename = null;
+  try{
+    if(!(await supportsWebCodecs())){
+      throw new Error('이 브라우저는 PowerPoint 호환 H.264/AAC MP4 렌더링을 지원하지 않습니다. Windows Chrome 또는 Edge 최신 버전에서 실행해 주세요.');
     }
+    savedFilename = await exportPrecise();
+    toast((savedFilename||'파일')+' 이 다운로드 폴더에 저장되었습니다.','info');
+  } catch(err){
+    if(err && err.message === CANCELLED){
+      toast('내보내기를 취소했습니다.','warn');
+    } else {
+      console.error(err);
+      toast('내보내기 중단: ' + (err && err.message ? err.message : err), 'error');
+    }
+  } finally {
+    exportInProgress = false;
+    exportCancelled = false;
+    exportAbortErr = null;
+    showExportOverlay(false);
+    seekPreview(state.playhead);
   }
-  throw new Error('지원되는 PowerPoint용 H.264 MP4 인코딩 설정이 없습니다.');
 }
-function drawSourceFrameToCanvas(ctx, v, w, h, fadeFactor){
+
+function drawSourceFrameToCanvas(ctx, v, w, h, fadeFactorVal){
   ctx.fillStyle = '#000';
   ctx.fillRect(0,0,w,h);
   const vw = v.videoWidth||w, vh = v.videoHeight||h;
   const scale = Math.min(w/vw, h/vh) || 1;
   const dw = vw*scale, dh = vh*scale;
   try{ ctx.drawImage(v, (w-dw)/2, (h-dh)/2, dw, dh); }catch(e){}
-  if(fadeFactor < 0.999){
-    ctx.fillStyle = 'rgba(0,0,0,' + (1-fadeFactor) + ')';
+  if(fadeFactorVal < 0.999){
+    ctx.fillStyle = 'rgba(0,0,0,' + (1-fadeFactorVal) + ')';
     ctx.fillRect(0,0,w,h);
   }
 }
-/* Seek once to a clip's start, then wait for a REAL decoded frame to be
-   presented (via requestVideoFrameCallback) before capture begins — never
-   used for per-frame scrubbing, only the single start-of-clip seek. */
+/* Seek once to a clip's start, then wait for a REAL decoded frame before
+   capture begins — used only for the single start-of-clip seek. */
 function seekAndAwaitFrame(v, time, timeoutMs){
   timeoutMs = timeoutMs || EXPORT_SEEK_TIMEOUT_MS;
   return new Promise(function(resolve){
@@ -3453,8 +4565,7 @@ function seekAndAwaitFrame(v, time, timeoutMs){
         v.requestVideoFrameCallback(function(now, metadata){
           frameCount++;
           const mt = metadata && metadata.mediaTime != null ? metadata.mediaTime : v.currentTime;
-          if(goodEnough(mt)) finish();
-          else awaitPresentedFrame();
+          if(goodEnough(mt)) finish(); else awaitPresentedFrame();
         });
       } else {
         setTimeout(function(){ frameCount++; finish(); }, 50);
@@ -3465,308 +4576,412 @@ function seekAndAwaitFrame(v, time, timeoutMs){
     v.addEventListener('seeked', onSeeked);
     v.addEventListener('loadeddata', onLoadedData);
     try{
-      if(Math.abs((v.currentTime||0) - target) < 0.002 && v.readyState >= 2){ awaitPresentedFrame(); }
-      else { v.currentTime = target; }
+      if(Math.abs((v.currentTime||0) - target) < 0.002 && v.readyState >= 2) awaitPresentedFrame();
+      else v.currentTime = target;
     }catch(e){ finish(); }
   });
 }
-
-function downloadBlob(blob, filename){
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url; a.download = filename;
-  document.body.appendChild(a);
-  a.click();
-  a.remove();
-  setTimeout(function(){ URL.revokeObjectURL(url); }, 8000);
+/* Drains an encoder with a watchdog: if the queue stops shrinking for long
+   enough we abort with a message instead of awaiting a promise forever. */
+async function flushWithWatchdog(enc, label, phase){
+  let done = false, err = null;
+  const p = enc.flush().then(function(){ done = true; }, function(e){ done = true; err = e; });
+  let lastQ = enc.encodeQueueSize, lastChange = performance.now();
+  const startQ = Math.max(1, lastQ);
+  while(!done){
+    await waitMs(EXPORT_TUNING.pollMs);
+    if(done) break;
+    try{ exportCheck(); }
+    catch(e){ try{ enc.close(); }catch(_){} throw e; }
+    const q = enc.encodeQueueSize;
+    if(q !== lastQ){ lastQ = q; lastChange = performance.now(); }
+    else if(performance.now() - lastChange > EXPORT_TUNING.stallAbortMs){
+      throw new Error(label + '가 ' + Math.round(EXPORT_TUNING.stallAbortMs/1000) + '초 동안 진행되지 않아 중단했습니다. (남은 프레임 ' + q + ') 해상도/프레임레이트를 낮추거나 클립 수를 줄여 다시 시도해 주세요.');
+    }
+    if(phase) setPhase(phase, 1 - (q/startQ), label + ' (남은 프레임 ' + q + ')');
+  }
+  await p;
+  if(err) throw err;
 }
 
 async function exportPrecise(){
-  const dur = totalDuration();
-  const exportConfig = await choosePptExportConfig();
+  const total = totalDuration();
+  if(!(total > 0.02)) throw new Error('타임라인 길이가 0입니다.');
+  const exportConfig = await choosePptExportConfig(total);
   const EXPORT_FPS = exportConfig.fps;
   const width = exportConfig.width;
   const height = exportConfig.height;
   const bitrate = exportConfig.bitrate;
   const chosenCodec = exportConfig.codec;
-  const filename = 'K_VIDEO_EDITOR_PPT_' + exportConfig.label + '_' + Date.now() + '.mp4';
-  updateExportNote(filename);
+  const filename = 'K_VIDEO_EDITOR_PPT_' + exportConfig.label + '_' + stamp() + '.mp4';
+  const est = estExportBytes(exportConfig, total);
+  updateExportNote(filename, fmtBytes(est));
+  if(exportConfig.label !== PPT_EXPORT_PRESETS[0].label && estExportBytes(PPT_EXPORT_PRESETS[0], total) > MAX_EXPORT_BYTES){
+    toast('길이가 길어 ' + exportConfig.label + ' 설정으로 자동 조정했습니다. (메모리 부족 방지)','warn');
+  }
 
   const off = document.createElement('canvas');
   off.width = width; off.height = height;
   const octx = off.getContext('2d');
 
-  /* ---- 1) audio: offline render (PCM) first ---- */
-  showExportOverlay(true, '오디오 처리 중...', 0);
-  const sampleRate = 48000;
-  const offlineCtx = new OfflineAudioContext(2, Math.max(1, Math.ceil(dur*sampleRate)), sampleRate);
-  const decodedBuffers = {};
-  const usedIds = getUsedSourceIds();
-  for(const sid of usedIds){
-    const src = state.sources[sid];
-    try{
-      const resp = await fetch(src.url);
-      const arr = await resp.arrayBuffer();
-      decodedBuffers[sid] = await offlineCtx.decodeAudioData(arr);
-    }catch(e){ decodedBuffers[sid] = null; }
-  }
-  const hasAnyAudio = usedIds.some(function(sid){ return !!decodedBuffers[sid]; });
-  let cs = 0;
-  for(const c of state.clips){
-    const buf = decodedBuffers[c.sourceId];
-    const cdur = clipDur(c);
-    if(buf && cdur>0.001){
-      const srcNode = offlineCtx.createBufferSource();
-      srcNode.buffer = buf;
-      const gainNode = offlineCtx.createGain();
-      srcNode.connect(gainNode);
-      gainNode.connect(offlineCtx.destination);
-      /* ⚠ volume 0 (mute) must stay 0 — only substitute 1 when volume is
-         genuinely unset (null/undefined), never via a falsy-OR check. */
-      const vol = c.volume==null ? 1 : c.volume;
-      const fi = Math.min(c.fadeIn||0, cdur);
-      const fo = Math.min(c.fadeOut||0, cdur);
-      const t0 = cs;
+  let videoEncoder = null, audioEncoder = null;
+  try{
+    /* ---- 1) audio: mix both sound channels (A1 + A2) offline into PCM ---- */
+    setPhase('mix', 0, '소리 채널(A1+A2) 믹싱 중...');
+    const sampleRate = 48000;
+    const offlineCtx = new OfflineAudioContext(2, Math.max(1, Math.ceil(total*sampleRate)), sampleRate);
+    const decoded = {};
+    const usedIds = {};
+    state.aclips.forEach(function(c){ usedIds[c.sourceId] = true; });
+    const idList = Object.keys(usedIds);
+    for(let i=0;i<idList.length;i++){
+      exportCheck();
+      const src = state.sources[idList[i]];
+      if(!src) continue;
+      setPhase('mix', (i+0.5)/Math.max(1,idList.length), '소리 디코딩 중... (' + (i+1) + '/' + idList.length + ')');
       try{
-        gainNode.gain.setValueAtTime(fi>0?0:vol, t0);
-        if(fi>0) gainNode.gain.linearRampToValueAtTime(vol, t0+fi);
-        const foStart = Math.max(t0+fi, t0+cdur-fo);
+        const resp = await fetch(src.url);
+        const arr = await resp.arrayBuffer();
+        decoded[idList[i]] = await offlineCtx.decodeAudioData(arr);
+      }catch(e){ decoded[idList[i]] = null; }
+    }
+    let hasAnyAudio = false;
+    state.aclips.forEach(function(c){
+      const buf = decoded[c.sourceId];
+      const cd = clipDur(c);
+      if(!buf || cd <= 0.001 || c.start >= total) return;
+      const node = offlineCtx.createBufferSource();
+      node.buffer = buf;
+      const g = offlineCtx.createGain();
+      node.connect(g); g.connect(offlineCtx.destination);
+      /* volume 0 (mute) must stay 0 — never fall back to 1 via falsy-OR. */
+      const vol = volOf(c);
+      const fi = Math.min(c.fadeIn||0, cd);
+      const fo = Math.min(c.fadeOut||0, cd);
+      const t0 = Math.max(0, c.start);
+      try{
+        g.gain.setValueAtTime(fi>0 ? 0 : vol, t0);
+        if(fi>0) g.gain.linearRampToValueAtTime(vol, t0+fi);
+        const foStart = Math.max(t0+fi, t0+cd-fo);
         if(fo>0){
-          gainNode.gain.setValueAtTime(vol, foStart);
-          gainNode.gain.linearRampToValueAtTime(0, t0+cdur);
+          g.gain.setValueAtTime(vol, foStart);
+          g.gain.linearRampToValueAtTime(0, t0+cd);
         }
-        srcNode.start(t0, c.in, cdur);
+        node.start(t0, c.in, Math.min(cd, total - t0));
+        hasAnyAudio = true;
       }catch(e){}
-    }
-    cs += cdur;
-  }
-  const rendered = hasAnyAudio ? await offlineCtx.startRendering() : null;
+    });
+    exportCheck();
+    setPhase('mix', 1, '소리 렌더링 중...');
+    const rendered = hasAnyAudio ? await offlineCtx.startRendering() : null;
+    exportCheck();
 
-  /* ---- 2) configure muxer + video encoder (faststart, zero-aligned) ---- */
-  const muxerConfig = {
-    target: new Mp4Muxer.ArrayBufferTarget(),
-    video: { codec:'avc', width, height },
-    fastStart: 'in-memory',
-    firstTimestampBehavior: 'offset'
-  };
-  if(hasAnyAudio) muxerConfig.audio = { codec:'aac', numberOfChannels:2, sampleRate:48000 };
-  const muxer = new Mp4Muxer.Muxer(muxerConfig);
+    /* ---- 2) muxer + video encoder ---- */
+    const muxerConfig = {
+      target: new Mp4Muxer.ArrayBufferTarget(),
+      video: { codec:'avc', width, height },
+      fastStart: 'in-memory',
+      firstTimestampBehavior: 'offset'
+    };
+    if(hasAnyAudio) muxerConfig.audio = { codec:'aac', numberOfChannels:2, sampleRate:48000 };
+    const muxer = new Mp4Muxer.Muxer(muxerConfig);
 
-  const videoEncoder = new VideoEncoder({
-    output: function(chunk, meta){ muxer.addVideoChunk(chunk, meta); },
-    error: function(e){ throw e; }
-  });
-  videoEncoder.configure({ codec: chosenCodec, width, height, bitrate, framerate: EXPORT_FPS, latencyMode: 'quality' });
+    videoEncoder = new VideoEncoder({
+      output: function(chunk, meta){
+        try{ muxer.addVideoChunk(chunk, meta); }catch(e){ exportFail(e); }
+      },
+      /* Never throw out of this callback: a thrown error here vanished and
+         left the drain loop below spinning forever. */
+      error: exportFail
+    });
+    videoEncoder.configure({ codec: chosenCodec, width, height, bitrate, framerate: EXPORT_FPS, latencyMode:'quality' });
 
-  /* ---- 3) video: encode a fixed CFR grid for PowerPoint. Each clip plays
-     at 1x, only real decoded frames are captured, and empty grid slots are
-     filled by holding the last decoded frame so the MP4 never drops frames. ---- */
-  showExportOverlay(true, 'PowerPoint용 영상 인코딩 중... 0%', 0);
-  const totalFrames = Math.max(1, Math.round(dur*EXPORT_FPS));
-  const progressStep = Math.max(1, Math.round(EXPORT_FPS/5));
-  const keyEveryFrames = Math.max(1, Math.round(EXPORT_FPS/2));
-  let globalFrameIndex = 0;
+    /* ---- 3) video: fixed CFR grid. Each clip plays at 1x, only real decoded
+       frames are captured, and empty grid slots hold the last frame. ---- */
+    setPhase('video', 0, '영상 인코딩 중... 0%');
+    const totalFrames = Math.max(1, Math.round(total*EXPORT_FPS));
+    const progressStep = Math.max(1, Math.round(EXPORT_FPS/5));
+    const keyEveryFrames = Math.max(1, Math.round(EXPORT_FPS/2));
+    let globalFrameIndex = 0;
 
-  async function encodeGridSlotsUpTo(targetTime, vForBackpressure){
-    while(globalFrameIndex < totalFrames && (globalFrameIndex/EXPORT_FPS) <= targetTime + 1e-6){
-      if(videoEncoder.encodeQueueSize > 8){
-        /* Stability-first export: slow the source down when the encoder queue
-           grows. This adds a little export time, but avoids periodic freezes
-           caused by the decoder/encoder racing ahead of each other. */
-        const wasPlaying = vForBackpressure && !vForBackpressure.paused;
-        if(wasPlaying){ try{ vForBackpressure.pause(); }catch(e){} }
-        while(videoEncoder.encodeQueueSize > 2){
-          await new Promise(function(r){ setTimeout(r, 10); });
+    async function encodeGridSlotsUpTo(targetTime, vForBackpressure){
+      while(globalFrameIndex < totalFrames && (globalFrameIndex/EXPORT_FPS) <= targetTime + 1e-6){
+        exportCheck();
+        if(videoEncoder.encodeQueueSize > 8){
+          const wasPlaying = vForBackpressure && !vForBackpressure.paused;
+          if(wasPlaying){ try{ vForBackpressure.pause(); }catch(e){} }
+          /* Bounded, abortable drain — the old unbounded version spun
+             forever whenever the encoder died mid-export. */
+          await waitFor(function(){
+            return videoEncoder.encodeQueueSize <= 2 || videoEncoder.state !== 'configured';
+          }, EXPORT_TUNING.queueWaitMs, '영상 인코더 큐 비우기');
+          if(videoEncoder.state !== 'configured') throw new Error('영상 인코더가 예기치 않게 종료되었습니다.');
+          if(wasPlaying){ try{ await vForBackpressure.play(); }catch(e){} }
         }
-        if(wasPlaying){ try{ await vForBackpressure.play(); }catch(e){} }
+        const ts = Math.round(globalFrameIndex * 1e6 / EXPORT_FPS);
+        const nextTs = Math.round((globalFrameIndex + 1) * 1e6 / EXPORT_FPS);
+        const durUs = Math.max(1, nextTs - ts);
+        const keyFrame = (globalFrameIndex % keyEveryFrames) === 0;
+        const frame = new VideoFrame(off, { timestamp: ts, duration: durUs });
+        try{ videoEncoder.encode(frame, { keyFrame }); }
+        finally{ frame.close(); }
+        globalFrameIndex++;
+        if(globalFrameIndex % progressStep === 0){
+          const f = globalFrameIndex/totalFrames;
+          setPhase('video', f, '영상 인코딩 중... ' + Math.round(f*100) + '%');
+        }
       }
-      const ts = Math.round(globalFrameIndex * 1e6 / EXPORT_FPS);
-      const nextTs = Math.round((globalFrameIndex + 1) * 1e6 / EXPORT_FPS);
-      const durUs = Math.max(1, nextTs - ts);
-      const keyFrame = (globalFrameIndex % keyEveryFrames) === 0; // every 0.5s
-      const frame = new VideoFrame(off, { timestamp: ts, duration: durUs });
-      videoEncoder.encode(frame, { keyFrame });
-      frame.close();
-      globalFrameIndex++;
-      if(globalFrameIndex % progressStep === 0){
-        const pct = Math.round(globalFrameIndex/totalFrames*100);
-        showExportOverlay(true, 'PowerPoint용 영상 인코딩 중... ' + pct + '%', pct);
-      }
+      exportCheck();
     }
-  }
-
-  async function primeClipStartFrames(c, clipStartTimeline, v){
-    const cdurVal = clipDur(c);
-    const primeUntil = Math.min(cdurVal, EXPORT_START_PRIME_SECONDS);
-    while(globalFrameIndex < totalFrames){
-      const frameTime = globalFrameIndex / EXPORT_FPS;
-      if(frameTime > clipStartTimeline + primeUntil + 1e-6) break;
-      const offset = Math.max(0, Math.min(cdurVal, frameTime - clipStartTimeline));
-      await seekAndAwaitFrame(v, c.in + offset, EXPORT_SEEK_TIMEOUT_MS);
-      drawSourceFrameToCanvas(octx, v, width, height, clipFadeFactor(c, offset));
-      await encodeGridSlotsUpTo(frameTime, v);
-      if(offset >= cdurVal - 1e-6) break;
-    }
-  }
-
-  function captureClipPlaythrough(c, clipStartTimeline, v){
-    return new Promise(async function(resolve){
+    async function primeClipStartFrames(c, clipStartTimeline, v){
       const cdurVal = clipDur(c);
-      const wasMuted = v.muted;
-      v.muted = true; // ⚠ never let capture playback be audible
-      try{ v.preload = 'auto'; }catch(e){}
-      try{ v.playbackRate = 1; }catch(e){} // ⚠ always 1x, never fast-forward
-      setActiveSource(c.sourceId, 0);
+      const primeUntil = Math.min(cdurVal, EXPORT_START_PRIME_SECONDS);
+      while(globalFrameIndex < totalFrames){
+        const frameTime = globalFrameIndex / EXPORT_FPS;
+        if(frameTime > clipStartTimeline + primeUntil + 1e-6) break;
+        const offset = clamp(frameTime - clipStartTimeline, 0, cdurVal);
+        await seekAndAwaitFrame(v, c.in + offset, EXPORT_SEEK_TIMEOUT_MS);
+        drawSourceFrameToCanvas(octx, v, width, height, fadeFactor(c, offset));
+        await encodeGridSlotsUpTo(frameTime, v);
+        if(offset >= cdurVal - 1e-6) break;
+      }
+    }
+    /* Captures one clip. Guarantees settlement: any throw rejects, and a hard
+       budget force-finishes the clip by padding the remaining grid slots. */
+    function captureClipPlaythrough(c, clipStartTimeline, v){
+      return new Promise(function(resolve, reject){
+        const cdurVal = clipDur(c);
+        const wasMuted = v.muted;
+        let finished = false, stallTimer = null, hardTimer = null, recovering = false, lastOffset = 0;
+        let pending = 0;   /* rVFC registration token: prevents duplicate loops */
 
-      let finished = false;
-      let stallTimer = null;
-      let recovering = false;
-      let lastOffset = 0;
-      function clearStallTimer(){ if(stallTimer){ clearTimeout(stallTimer); stallTimer = null; } }
-      function finish(){
-        if(finished) return;
-        finished = true;
-        clearStallTimer();
-        try{ v.pause(); }catch(e){}
-        v.muted = wasMuted;
-        resolve();
-      }
-      function scheduleStallRecovery(){
-        clearStallTimer();
-        stallTimer = setTimeout(function(){ recoverFromStall(); }, EXPORT_STALL_RECOVERY_MS);
-      }
-      async function recoverFromStall(){
-        if(finished || recovering) return;
-        recovering = true;
-        try{
-          try{ v.pause(); }catch(e){}
-          const nextTimeline = Math.min(clipStartTimeline + cdurVal, Math.max(clipStartTimeline + lastOffset, globalFrameIndex / EXPORT_FPS));
-          const nextOffset = Math.max(0, Math.min(cdurVal, nextTimeline - clipStartTimeline));
-          await seekAndAwaitFrame(v, c.in + nextOffset, EXPORT_SEEK_TIMEOUT_MS);
+        function clearStallTimer(){ if(stallTimer){ clearTimeout(stallTimer); stallTimer = null; } }
+        function finish(){
           if(finished) return;
-          lastOffset = nextOffset;
-          drawSourceFrameToCanvas(octx, v, width, height, clipFadeFactor(c, nextOffset));
-          await encodeGridSlotsUpTo(clipStartTimeline + nextOffset, v);
-          if(nextOffset >= cdurVal - 0.0008){
+          finished = true;
+          clearStallTimer();
+          if(hardTimer){ clearTimeout(hardTimer); hardTimer = null; }
+          try{ v.pause(); }catch(e){}
+          v.muted = wasMuted;
+          resolve();
+        }
+        function bail(e){
+          if(finished) return;
+          finished = true;
+          clearStallTimer();
+          if(hardTimer){ clearTimeout(hardTimer); hardTimer = null; }
+          try{ v.pause(); }catch(e2){}
+          v.muted = wasMuted;
+          reject(e);
+        }
+        function nextFrameCallback(){
+          const token = ++pending;
+          if(v.requestVideoFrameCallback){
+            v.requestVideoFrameCallback(function(now, metadata){
+              if(token !== pending) return;   /* superseded */
+              onFrame(now, metadata);
+            });
+          } else {
+            setTimeout(function(){
+              if(token !== pending) return;
+              onFrame(performance.now(), { mediaTime: v.currentTime });
+            }, 1000/EXPORT_FPS);
+          }
+        }
+        function scheduleStallRecovery(){
+          clearStallTimer();
+          stallTimer = setTimeout(function(){ recoverFromStall(); }, EXPORT_STALL_RECOVERY_MS);
+        }
+        async function recoverFromStall(){
+          if(finished || recovering) return;
+          recovering = true;
+          try{
+            try{ v.pause(); }catch(e){}
+            const nextTimeline = Math.min(clipStartTimeline + cdurVal,
+              Math.max(clipStartTimeline + lastOffset, globalFrameIndex / EXPORT_FPS));
+            const nextOffset = clamp(nextTimeline - clipStartTimeline, 0, cdurVal);
+            await seekAndAwaitFrame(v, c.in + nextOffset, EXPORT_SEEK_TIMEOUT_MS);
+            if(finished) return;
+            lastOffset = nextOffset;
+            drawSourceFrameToCanvas(octx, v, width, height, fadeFactor(c, nextOffset));
+            await encodeGridSlotsUpTo(clipStartTimeline + nextOffset, v);
+            if(finished) return;
+            if(nextOffset >= cdurVal - 0.0008){
+              await encodeGridSlotsUpTo(clipStartTimeline + cdurVal, v);
+              finish();
+              return;
+            }
+            try{ await v.play(); }catch(e){}
+            scheduleStallRecovery();
+            nextFrameCallback();
+          } catch(e){ bail(e); }
+          finally { recovering = false; }
+        }
+        function onFrame(now, metadata){
+          if(finished || recovering) return;
+          clearStallTimer();
+          const mediaTime = (metadata && metadata.mediaTime != null) ? metadata.mediaTime : v.currentTime;
+          let offset = clamp(mediaTime - c.in, 0, cdurVal);
+          if(offset < lastOffset - 0.020){
+            scheduleStallRecovery();
+            nextFrameCallback();
+            return;
+          }
+          lastOffset = Math.max(lastOffset, offset);
+          drawSourceFrameToCanvas(octx, v, width, height, fadeFactor(c, offset));
+          const targetTimelineTime = clipStartTimeline + offset;
+          const reachedEnd = (offset >= cdurVal - 0.0008) || v.ended;
+          encodeGridSlotsUpTo(targetTimelineTime, v).then(function(){
+            if(finished) return;
+            if(reachedEnd){
+              return encodeGridSlotsUpTo(clipStartTimeline + cdurVal, v).then(finish);
+            }
+            scheduleStallRecovery();
+            nextFrameCallback();
+          }).catch(bail);
+        }
+
+        (async function(){
+          v.muted = true;
+          try{ v.preload = 'auto'; }catch(e){}
+          try{ v.playbackRate = 1; }catch(e){}
+          setActiveSource(c.sourceId, 0);
+          /* Absolute per-clip budget. Whatever goes wrong with the decoder,
+             the clip cannot hold the whole export hostage. */
+          hardTimer = setTimeout(function(){
+            if(finished) return;
+            encodeGridSlotsUpTo(clipStartTimeline + cdurVal, null)
+              .then(finish).catch(bail);
+          }, Math.max(25000, cdurVal*1000*4 + 20000));
+
+          await seekAndAwaitFrame(v, c.in, EXPORT_SEEK_TIMEOUT_MS);
+          if(finished) return;
+          await primeClipStartFrames(c, clipStartTimeline, v);
+          if(finished) return;
+          lastOffset = Math.max(lastOffset, clamp((globalFrameIndex/EXPORT_FPS) - clipStartTimeline, 0, cdurVal));
+          if((globalFrameIndex / EXPORT_FPS) >= clipStartTimeline + cdurVal - 1e-6){
             await encodeGridSlotsUpTo(clipStartTimeline + cdurVal, v);
             finish();
             return;
           }
-          try{ await v.play(); }catch(e){}
           scheduleStallRecovery();
-          if(v.requestVideoFrameCallback) v.requestVideoFrameCallback(onFrame);
-        } finally {
-          recovering = false;
-        }
-      }
+          try{ await v.play(); }catch(e){ await recoverFromStall(); return; }
+          nextFrameCallback();
+        })().catch(bail);
+      });
+    }
 
-      await seekAndAwaitFrame(v, c.in, EXPORT_SEEK_TIMEOUT_MS);
-      if(finished) return;
-      await primeClipStartFrames(c, clipStartTimeline, v);
-      if(finished) return;
-      lastOffset = Math.max(lastOffset, Math.max(0, Math.min(cdurVal, (globalFrameIndex / EXPORT_FPS) - clipStartTimeline)));
-      if((globalFrameIndex / EXPORT_FPS) >= clipStartTimeline + cdurVal - 1e-6){
-        await encodeGridSlotsUpTo(clipStartTimeline + cdurVal, v);
-        finish();
+    /* A still needs no decoder: paint it once (or per frame while fading) and
+       fill the grid. Much faster than a playthrough. */
+    async function encodeImageClip(c, startT, src){
+      const cd = clipDur(c);
+      const fading = (c.fadeIn||0) > 0 || (c.fadeOut||0) > 0;
+      if(!fading){
+        drawImageToCanvas(octx, src.el, width, height, c.fit, 1);
+        await encodeGridSlotsUpTo(startT + cd, null);
         return;
       }
-
-      scheduleStallRecovery();
-
-      function onFrame(now, metadata){
-        if(finished || recovering) return;
-        clearStallTimer();
-        const mediaTime = (metadata && metadata.mediaTime != null) ? metadata.mediaTime : v.currentTime;
-        let offset = mediaTime - c.in;
-        offset = Math.max(0, Math.min(cdurVal, offset));
-        if(offset < lastOffset - 0.020){
-          scheduleStallRecovery();
-          if(v.requestVideoFrameCallback) v.requestVideoFrameCallback(onFrame);
-          return;
-        }
-        lastOffset = Math.max(lastOffset, offset);
-        const f = clipFadeFactor(c, offset);
-        drawSourceFrameToCanvas(octx, v, width, height, f);
-        const targetTimelineTime = clipStartTimeline + offset;
-        const reachedEnd = (offset >= cdurVal - 0.0008) || v.ended;
-        encodeGridSlotsUpTo(targetTimelineTime, v).then(function(){
-          if(finished) return;
-          if(reachedEnd){
-            /* Fill any remaining grid slots for this clip with the last
-               captured frame so the next clip starts exactly on time. */
-            encodeGridSlotsUpTo(clipStartTimeline + cdurVal, v).then(finish);
-            return;
-          }
-          scheduleStallRecovery();
-          if(v.requestVideoFrameCallback) v.requestVideoFrameCallback(onFrame);
-          else setTimeout(function(){ onFrame(performance.now(), { mediaTime: v.currentTime }); }, 1000/EXPORT_FPS);
-        });
+      let guard = 0;
+      while(globalFrameIndex < totalFrames && (globalFrameIndex/EXPORT_FPS) <= startT + cd + 1e-6){
+        exportCheck();
+        const ft = globalFrameIndex/EXPORT_FPS;
+        const before = globalFrameIndex;
+        drawImageToCanvas(octx, src.el, width, height, c.fit, fadeFactor(c, clamp(ft-startT, 0, cd)));
+        await encodeGridSlotsUpTo(ft, null);
+        if(globalFrameIndex === before){ if(++guard > 4) break; } else { guard = 0; }
       }
-      try{ await v.play(); }catch(e){ await recoverFromStall(); return; }
-      if(v.requestVideoFrameCallback) v.requestVideoFrameCallback(onFrame);
-      else setTimeout(function(){ onFrame(performance.now(), { mediaTime: v.currentTime }); }, 1000/EXPORT_FPS);
-    });
-  }
-
-  let clipStartAcc = 0;
-  for(const c of state.clips){
-    const cdurVal = clipDur(c);
-    const src = state.sources[c.sourceId];
-    if(!src || cdurVal <= 0.0005){
-      octx.fillStyle = '#000'; octx.fillRect(0,0,width,height);
-      await encodeGridSlotsUpTo(clipStartAcc + cdurVal, null);
-    } else {
-      await captureClipPlaythrough(c, clipStartAcc, src.el);
+      await encodeGridSlotsUpTo(startT + cd, null);
     }
-    clipStartAcc += cdurVal;
-  }
-  await encodeGridSlotsUpTo(dur + 1, null); // mop up any rounding leftovers
-  await videoEncoder.flush();
 
-  /* ---- 4) audio: encode the already-rendered PCM to AAC ---- */
-  if(hasAnyAudio && rendered){
-    showExportOverlay(true, 'AAC 오디오 인코딩 중...', 100);
-    const audioEncoder = new AudioEncoder({
-      output: function(chunk, meta){ muxer.addAudioChunk(chunk, meta); },
-      error: function(e){ throw e; }
-    });
-    audioEncoder.configure({ codec:'mp4a.40.2', sampleRate:48000, numberOfChannels:2, bitrate:192000 });
+    let clipStartAcc = 0;
+    for(const c of state.vclips){
+      exportCheck();
+      const cdurVal = clipDur(c);
+      const src = state.sources[c.sourceId];
+      if(!src || !src.el || cdurVal <= 0.0005){
+        octx.fillStyle = '#000'; octx.fillRect(0,0,width,height);
+        await encodeGridSlotsUpTo(clipStartAcc + cdurVal, null);
+      } else if(src.kind === 'image'){
+        setPhase('video', globalFrameIndex/totalFrames, '이미지 인코딩 중... ' + Math.round(globalFrameIndex/totalFrames*100) + '%');
+        await encodeImageClip(c, clipStartAcc, src);
+      } else {
+        await captureClipPlaythrough(c, clipStartAcc, src.el);
+      }
+      clipStartAcc += cdurVal;
+    }
+    /* Sound may run past the last picture clip (or there may be no picture at
+       all) — fill the rest of the timeline with black so the MP4 stays valid. */
+    octx.fillStyle = '#000'; octx.fillRect(0,0,width,height);
+    await encodeGridSlotsUpTo(total + 1, null);
 
-    const chunkSize = 1024;
-    const numFrames = rendered.length;
-    const ch0 = rendered.getChannelData(0);
-    const ch1 = rendered.numberOfChannels>1 ? rendered.getChannelData(1) : ch0;
-    for(let i=0;i<numFrames;i+=chunkSize){
-      const len = Math.min(chunkSize, numFrames-i);
-      const planar = new Float32Array(len*2);
-      planar.set(ch0.subarray(i,i+len), 0);
-      planar.set(ch1.subarray(i,i+len), len);
-      const audioData = new AudioData({
-        format:'f32-planar', sampleRate:48000, numberOfFrames:len, numberOfChannels:2,
-        timestamp: Math.round(i/48000*1e6), data: planar
+    setPhase('vflush', 0, '영상 인코더 마무리 중...');
+    await flushWithWatchdog(videoEncoder, '영상 인코더 마무리', 'vflush');
+    try{ videoEncoder.close(); }catch(e){}
+    videoEncoder = null;
+
+    /* ---- 4) encode the rendered PCM to AAC ---- */
+    if(hasAnyAudio && rendered){
+      setPhase('aenc', 0, 'AAC 오디오 인코딩 중... 0%');
+      audioEncoder = new AudioEncoder({
+        output: function(chunk, meta){
+          try{ muxer.addAudioChunk(chunk, meta); }catch(e){ exportFail(e); }
+        },
+        error: exportFail
       });
-      if(audioEncoder.encodeQueueSize>8) await new Promise(function(r){ setTimeout(r,0); });
-      audioEncoder.encode(audioData);
-      audioData.close();
+      audioEncoder.configure({ codec:'mp4a.40.2', sampleRate:48000, numberOfChannels:2, bitrate:192000 });
+      const chunkSize = 1024;
+      const numFrames = rendered.length;
+      const ch0 = rendered.getChannelData(0);
+      const ch1 = rendered.numberOfChannels>1 ? rendered.getChannelData(1) : ch0;
+      let sinceYield = 0;
+      for(let i=0;i<numFrames;i+=chunkSize){
+        exportCheck();
+        if(audioEncoder.encodeQueueSize > 24){
+          await waitFor(function(){
+            return audioEncoder.encodeQueueSize <= 8 || audioEncoder.state !== 'configured';
+          }, EXPORT_TUNING.queueWaitMs, '오디오 인코더 큐 비우기');
+          if(audioEncoder.state !== 'configured') throw new Error('오디오 인코더가 예기치 않게 종료되었습니다.');
+        }
+        const len = Math.min(chunkSize, numFrames-i);
+        const planar = new Float32Array(len*2);
+        planar.set(ch0.subarray(i,i+len), 0);
+        planar.set(ch1.subarray(i,i+len), len);
+        const audioData = new AudioData({
+          format:'f32-planar', sampleRate:48000, numberOfFrames:len, numberOfChannels:2,
+          timestamp: Math.round(i/48000*1e6), data: planar
+        });
+        try{ audioEncoder.encode(audioData); }
+        finally{ audioData.close(); }
+        if(++sinceYield >= 48){
+          sinceYield = 0;
+          const f = i/numFrames;
+          setPhase('aenc', f, 'AAC 오디오 인코딩 중... ' + Math.round(f*100) + '%');
+          await waitMs(0);
+        }
+      }
+      setPhase('aenc', 1, '오디오 인코더 마무리 중...');
+      await flushWithWatchdog(audioEncoder, '오디오 인코더 마무리', 'aenc');
+      try{ audioEncoder.close(); }catch(e){}
+      audioEncoder = null;
     }
-    await audioEncoder.flush();
+
+    /* ---- 5) finalize ---- */
+    exportCheck();
+    setPhase('mux', 0.1, 'MP4 컨테이너 작성 중...');
+    await waitMs(30);   /* let the overlay repaint before the heavy sync step */
+    muxer.finalize();
+    setPhase('mux', 0.7, '파일 생성 중...');
+    await waitMs(0);
+    const buffer = muxer.target.buffer;
+    if(!buffer || !buffer.byteLength) throw new Error('생성된 MP4가 비어 있습니다.');
+    const blob = new Blob([buffer], { type:'video/mp4' });
+    setPhase('mux', 1, '다운로드 시작...');
+    downloadBlob(blob, filename);
+    return filename;
+  } finally {
+    if(videoEncoder){ try{ videoEncoder.close(); }catch(e){} }
+    if(audioEncoder){ try{ audioEncoder.close(); }catch(e){} }
   }
-
-  /* ---- 5) finalize ---- */
-  showExportOverlay(true, 'PowerPoint용 MP4 마무리 중...', 100);
-  muxer.finalize();
-  const buffer = muxer.target.buffer;
-  const blob = new Blob([buffer], { type:'video/mp4' });
-  downloadBlob(blob, filename);
-  return filename;
-}
-
-async function exportRecording(){
-  throw new Error('PowerPoint용 내보내기에서는 녹화 방식과 WebM 저장을 사용하지 않습니다.');
-}
-
-function attemptRecordingWithMime(){
-  throw new Error('PowerPoint용 내보내기에서는 녹화 방식과 WebM 저장을 사용하지 않습니다.');
 }
 
 /* =========================================================
@@ -3779,11 +4994,11 @@ function init(){
   renderTimeline();
   updatePlayIcon();
   updatePlaceholder();
+  updatePlayheadUI();
 }
 init();
 
 })();
-
 </script>
 
 </body>
